@@ -1,0 +1,76 @@
+# Claude Mythos - Caddy Reverse Proxy Configuration
+# Works on any VPS with a public IP or domain
+
+# If you have a domain, replace :80 with your domain:
+# example.com, www.example.com {
+:80 {
+    # Serve frontend static files
+    root * /opt/claude-mythos/frontend/dist
+    file_server {
+        precompressed gzip zstd
+    }
+
+    # SPA fallback - all routes go to index.html
+    try_files {path} {path}/ /index.html
+
+    # Proxy API requests to backend
+    handle_path /api/* {
+        reverse_proxy localhost:8000
+    }
+
+    # Proxy webhook requests to backend
+    handle_path /webhook/* {
+        reverse_proxy localhost:8000
+    }
+
+    # Proxy docs
+    handle_path /docs {
+        reverse_proxy localhost:8000
+    }
+
+    handle_path /redoc {
+        reverse_proxy localhost:8000
+    }
+
+    # Health check proxy
+    handle_path /health {
+        reverse_proxy localhost:8000
+    }
+
+    # Compression
+    encode gzip zstd
+
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Prevent MIME type sniffing
+        X-Content-Type-Options "nosniff"
+        # Enable XSS filter
+        X-XSS-Protection "1; mode=block"
+        # Control referrer information
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Limit feature access
+        Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/mythos-access.log {
+            roll_size 10MB
+            roll_keep 5
+            roll_keep_for 168h
+        }
+        format json
+    }
+}
+
+# HTTPS Configuration (uncomment when you have a domain):
+# your-domain.com {
+#     import :80
+#     tls {
+#         protocols tls1.2 tls1.3
+#     }
+# }
