@@ -10,12 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app/ ./app/
 
 ENV PYTHONPATH=/app
-ENV DATABASE_PATH=/app/data/mythos.db
-
-RUN mkdir -p /app/data && chmod 777 /app/data
 
 EXPOSE 8000
 
-COPY backend/start.sh ./start.sh
-RUN chmod +x ./start.sh
-CMD ["./start.sh"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
