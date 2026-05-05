@@ -12,7 +12,7 @@ COPY backend/app/ ./app/
 ENV PYTHONPATH=/app
 ENV DATABASE_PATH=/app/data/mythos.db
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chmod 777 /app/data
 
 EXPOSE 8000
 
