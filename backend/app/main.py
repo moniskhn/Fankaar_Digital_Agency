@@ -50,8 +50,8 @@ async def lifespan(app: FastAPI):
         init_db()
         logger.info("✅ Database initialized")
     except Exception as e:
-        logger.error(f"❌ Database initialization failed: {e}")
-        raise
+    logger.error(f"❌ Database initialization failed: {e}")
+    logger.info("🔄 Continuing without database...")
 
     # Seed agent definitions into database
     try:
