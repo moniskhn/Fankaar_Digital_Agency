@@ -1,5 +1,5 @@
 """
-Claude Mythos -- Enhanced Agent Memory System
+Fankaar Digital -- Enhanced Agent Memory System
 Rich, human-like memory with 4 types:
   A. Episodic Memory  -- "What happened" (events, experiences)
   B. Semantic Memory  -- "What I know" (facts, knowledge, insights)
@@ -1285,7 +1285,7 @@ class EnhancedAgentMemory:
         from_agent: Optional[str] = None,
         to_agent: Optional[str] = None,
         message_type: str = "chat",
-        metadata: Optional[Dict[str, Any]] = None,
+        extra_metadata: Optional[Dict[str, Any]] = None,
         campaign_id: Optional[str] = None,
     ) -> str:
         """Backwards-compatible message storage."""
@@ -1298,7 +1298,7 @@ class EnhancedAgentMemory:
                 content=content,
                 timestamp=self._now(),
                 message_type=message_type,
-                metadata=metadata or {},
+                extra_metadata=extra_metadata or {},
                 campaign_id=campaign_id,
             )
             db.add(msg)
@@ -1348,7 +1348,7 @@ class EnhancedAgentMemory:
                     "content": m.content,
                     "timestamp": m.timestamp.isoformat() if m.timestamp else None,
                     "message_type": m.message_type,
-                    "metadata": m.metadata,
+                    "extra_metadata": m.extra_metadata,
                     "campaign_id": m.campaign_id,
                     "read": bool(m.read),
                 }
@@ -1376,7 +1376,7 @@ class EnhancedAgentMemory:
             from_agent="system",
             to_agent=self.agent_id,
             message_type="system",
-            metadata={"state_key": key, "state_value": value},
+            extra_metadata={"state_key": key, "state_value": value},
         )
 
     def get_state(self, key: str, default: Any = None) -> Any:
@@ -1393,8 +1393,8 @@ class EnhancedAgentMemory:
                 .order_by(desc(MessageModel.timestamp))
                 .first()
             )
-            if msg and msg.metadata:
-                return msg.metadata.get("state_value", default)
+            if msg and msg.extra_metadata:
+                return msg.extra_metadata.get("state_value", default)
             return default
         finally:
             db.close()

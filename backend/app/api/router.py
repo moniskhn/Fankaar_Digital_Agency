@@ -1,5 +1,5 @@
 """
-Claude Mythos — API Routes
+Fankaar Digital — API Routes
 All API endpoints for the FastAPI backend.
 """
 
@@ -26,6 +26,7 @@ from app.core.database import (
     AgentModel,
     CampaignModel,
     ClientModel,
+    ContactSubmissionModel,
     MessageModel,
     ReportModel,
     SessionLocal,
@@ -1249,7 +1250,7 @@ async def submit_contact_form(request: Request, db: Session = Depends(get_db)):
             to_agent="sandor",
             content=sales_msg,
             message_type="lead",
-            metadata={"submission_id": submission.id, "source": "contact_form"},
+            extra_metadata={"submission_id": submission.id, "source": "contact_form"},
         ))
         db.commit()
     except Exception as e:

@@ -1,5 +1,5 @@
 """
-Claude Mythos -- Memory Initializer
+Fankaar Digital -- Memory Initializer
 Seeds each agent with initial experiences and knowledge so they don't
 start as blank slates.  Every agent gets domain-specific facts,
 patterns, and episodes that reflect their role and expertise.
@@ -391,7 +391,7 @@ SEED_DATA: dict[str, dict] = {
             ("team_coordination", "Team Coordination: 1) Each agent knows their role and current priorities 2) Handoffs between agents are documented 3) Dependencies are flagged early 4) Blockers are escalated immediately 5) Wins are shared across the team 6) Cross-functional collaboration is the norm, not the exception.", "leadership", 0.92, "training"),
         ],
         "patterns": [
-            ("daily_report_format", "Daily CEO Report Format: 'Claude Mythos Daily Brief - [Date]' -> Highlights (3-5 items with emojis) -> Team Updates (each agent: status + highlight) -> Campaign Status (active campaigns + progress) -> Decisions Made -> Tomorrow's Priorities (numbered) -> Owner Action Required. Keep under 800 words.", "reporting", 0.9, None),
+            ("daily_report_format", "Daily CEO Report Format: 'Fankaar Digital Daily Brief - [Date]' -> Highlights (3-5 items with emojis) -> Team Updates (each agent: status + highlight) -> Campaign Status (active campaigns + progress) -> Decisions Made -> Tomorrow's Priorities (numbered) -> Owner Action Required. Keep under 800 words.", "reporting", 0.9, None),
         ],
         "episodes": [
             ("milestone_reached", "Agency reached 50 active campaigns milestone. Team of 23 agents operating smoothly. Revenue at all-time high. Owner expressed satisfaction with agency performance.", 9, {"valence": "positive", "intensity": 9}),
@@ -592,7 +592,7 @@ def print_seed_report(results: list) -> None:
 # ═══════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    print("Claude Mythos -- Agent Memory Initializer")
+    print("Fankaar Digital -- Agent Memory Initializer")
     print("Seeding all agents with domain-specific knowledge...\n")
 
     results = seed_all_agents()

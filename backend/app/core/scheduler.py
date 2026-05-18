@@ -1,5 +1,5 @@
 """
-Claude Mythos -- APScheduler Integration
+Fankaar Digital -- APScheduler Integration
 Schedules daily CEO report, runtime worker loop, health checks,
 and campaign phase advancement with proper error handling and retry logic.
 """
@@ -32,7 +32,7 @@ def get_scheduler() -> AsyncIOScheduler:
 
 class RuntimeScheduler:
     """
-    Wraps APScheduler with Claude Mythos-specific job definitions.
+    Wraps APScheduler with Fankaar Digital-specific job definitions.
     Handles daily CEO reports, periodic runtime ticks, health checks,
     and campaign maintenance tasks.
     """

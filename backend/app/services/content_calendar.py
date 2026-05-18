@@ -1,5 +1,5 @@
 """
-Claude Mythos — Content Calendar
+Fankaar Digital — Content Calendar
 Timezone-aware scheduling, optimal posting time calculation,
 and content calendar generation.
 """
@@ -151,7 +151,7 @@ class ContentCalendarEngine:
                     timezone=post.timezone,
                     status=post.status,
                     engagement_estimate=post.engagement_estimate,
-                    metadata=post.metadata,
+                    extra_metadata=post.extra_metadata,
                 )
                 db.add(db_post)
             db.commit()
@@ -209,7 +209,7 @@ class ContentCalendarEngine:
                 timezone="UTC",
                 status="scheduled",
                 engagement_estimate=0.0,
-                metadata={
+                extra_metadata={
                     "region": region,
                     "optimal_time_reason": f"Peak engagement time for {channel} in {region}",
                 },
@@ -248,7 +248,7 @@ class ContentCalendarEngine:
                     status=p.status,
                     posted_at=p.posted_at,
                     engagement_estimate=p.engagement_estimate or 0.0,
-                    metadata=p.metadata or {},
+                    extra_metadata=p.extra_metadata or {},
                 )
                 for p in posts_db
             ]
@@ -337,7 +337,7 @@ class ContentCalendarEngine:
                 status=post.status,
                 posted_at=post.posted_at,
                 engagement_estimate=post.engagement_estimate or 0.0,
-                metadata=post.metadata or {},
+                extra_metadata=post.extra_metadata or {},
             )
         finally:
             db.close()
@@ -368,7 +368,7 @@ class ContentCalendarEngine:
                     status=p.status,
                     posted_at=p.posted_at,
                     engagement_estimate=p.engagement_estimate or 0.0,
-                    metadata=p.metadata or {},
+                    extra_metadata=p.extra_metadata or {},
                 )
                 for p in posts_db
             ]

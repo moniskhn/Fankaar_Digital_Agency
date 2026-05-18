@@ -1,5 +1,5 @@
 """
-Claude Mythos — Service Catalog & Quote Generation
+Fankaar Digital — Service Catalog & Quote Generation
 Complete service definitions for all 23 agents, 3 subscription tiers,
 and intelligent auto-quote generation based on client needs.
 """
@@ -631,7 +631,7 @@ PACKAGES: Dict[str, Dict[str, Any]] = {
     "enterprise": {
         "id": "enterprise",
         "name": "Enterprise",
-        "tagline": "The full power of Claude Mythos — all 23 AI agents at your service",
+        "tagline": "The full power of Fankaar Digital — all 23 AI agents at your service",
         "description": "Unlimited access to all 23 AI marketing specialists. Unlimited campaigns, dedicated client success, executive reporting, legal compliance, and strategic oversight from our AI CEO. For enterprises that demand the best.",
         "price_monthly": 3999,
         "price_annual": 39990,

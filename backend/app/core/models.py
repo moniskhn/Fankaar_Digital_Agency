@@ -1,5 +1,5 @@
 """
-Claude Mythos — Pydantic Models (Schemas)
+Fankaar Digital — Pydantic Models (Schemas)
 All request/response models for the API.
 """
 
@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 # Common Base Models
 # ═══════════════════════════════════════════════════════════════
 
-class MythosBaseModel(BaseModel):
+class FankaarBaseModel(BaseModel):
     """Base model with ORM mode for all schemas."""
     class Config:
         from_attributes = True
@@ -29,7 +29,7 @@ class AgentSkill(BaseModel):
     level: str = "expert"  # novice, intermediate, expert, master
 
 
-class Agent(MythosBaseModel):
+class Agent(FankaarBaseModel):
     id: str
     name: str
     full_name: str
@@ -106,7 +106,7 @@ class AgentUpdateEntry(BaseModel):
 # Client Models
 # ═══════════════════════════════════════════════════════════════
 
-class Client(MythosBaseModel):
+class Client(FankaarBaseModel):
     id: str
     name: str
     industry: str
@@ -171,7 +171,7 @@ class Deliverable(BaseModel):
     completed_at: Optional[datetime] = None
 
 
-class Campaign(MythosBaseModel):
+class Campaign(FankaarBaseModel):
     id: str
     client_id: str
     name: str
@@ -243,7 +243,7 @@ class TaskNote(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
-class Task(MythosBaseModel):
+class Task(FankaarBaseModel):
     id: str
     campaign_id: Optional[str] = None
     assigned_to: str
@@ -293,14 +293,14 @@ class TaskAssignment(BaseModel):
 # Message Models
 # ═══════════════════════════════════════════════════════════════
 
-class Message(MythosBaseModel):
+class Message(FankaarBaseModel):
     id: str
     from_agent: str
     to_agent: str
     content: str
     timestamp: datetime
     message_type: str = "chat"  # chat, task, report, alert, decision
-    metadata: Dict[str, Any] = {}
+    extra_metadata: Dict[str, Any] = {}
     read: bool = False
     campaign_id: Optional[str] = None
 
@@ -310,7 +310,7 @@ class MessageCreate(BaseModel):
     to_agent: str
     content: str
     message_type: str = "chat"
-    metadata: Dict[str, Any] = {}
+    extra_metadata: Dict[str, Any] = {}
     campaign_id: Optional[str] = None
 
 
@@ -325,7 +325,7 @@ class MessageSendRequest(BaseModel):
 # Daily Report Models
 # ═══════════════════════════════════════════════════════════════
 
-class DailyReport(MythosBaseModel):
+class DailyReport(FankaarBaseModel):
     id: str
     date: str  # ISO date YYYY-MM-DD
     summary: str
@@ -379,7 +379,7 @@ class Persona(BaseModel):
     purchase_behavior: str
 
 
-class RegionalProfile(MythosBaseModel):
+class RegionalProfile(FankaarBaseModel):
     region: str
     culture_notes: str
     language_primary: str
@@ -403,7 +403,7 @@ class PostingTimeRequest(BaseModel):
 # Scheduled Post Models
 # ═══════════════════════════════════════════════════════════════
 
-class ScheduledPost(MythosBaseModel):
+class ScheduledPost(FankaarBaseModel):
     id: str
     campaign_id: str
     platform: str
@@ -415,7 +415,7 @@ class ScheduledPost(MythosBaseModel):
     status: str = "scheduled"
     posted_at: Optional[datetime] = None
     engagement_estimate: float = 0.0
-    metadata: Dict[str, Any] = {}
+    extra_metadata: Dict[str, Any] = {}
 
 
 class ScheduledPostCreate(BaseModel):
@@ -426,13 +426,14 @@ class ScheduledPostCreate(BaseModel):
     media_urls: List[str] = []
     scheduled_time: datetime
     timezone: str = "UTC"
+    extra_metadata: Dict[str, Any] = {}
 
 
 # ═══════════════════════════════════════════════════════════════
 # Dashboard Models
 # ═══════════════════════════════════════════════════════════════
 
-class DashboardStats(MythosBaseModel):
+class DashboardStats(FankaarBaseModel):
     total_agents: int = 23
     active_agents: int = 0
     busy_agents: int = 0
@@ -450,7 +451,7 @@ class DashboardStats(MythosBaseModel):
     report_sent: bool = False
 
 
-class ActivityFeedItem(MythosBaseModel):
+class ActivityFeedItem(FankaarBaseModel):
     id: str
     actor: str
     actor_avatar: str
@@ -550,7 +551,7 @@ class CampaignWorkflowResult(BaseModel):
     phases: List[str]
 
 
-class CampaignReport(MythosBaseModel):
+class CampaignReport(FankaarBaseModel):
     campaign_id: str
     campaign_name: str
     status: str

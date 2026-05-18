@@ -1,5 +1,5 @@
 """
-Claude Mythos — Client Onboarding Service
+Fankaar Digital — Client Onboarding Service
 5-step guided onboarding: Business Info, Marketing Goals, Region & Audience,
 Brand Voice, Package Selection. Saves progress, auto-assigns agents, triggers welcome.
 """
@@ -359,7 +359,7 @@ class ClientOnboardingService:
 
             # Welcome message from Jon (CEO) to the client
             ceo_welcome = (
-                f"Welcome to Claude Mythos, {client.name}! I'm Jon, the CEO. "
+                f"Welcome to Fankaar Digital, {client.name}! I'm Jon, the CEO. "
                 f"Your dedicated team is assembled and ready to deliver exceptional results. "
                 f"We'll have our first strategy session scheduled within 24 hours. "
                 f"If you ever need me directly, just send a message."
@@ -370,7 +370,7 @@ class ClientOnboardingService:
                 to_agent="davos",  # Davos relays to client
                 content=ceo_welcome,
                 message_type="welcome",
-                metadata={"client_id": client_id, "package_id": client.package_id},
+                extra_metadata={"client_id": client_id, "package_id": client.package_id},
             ))
             messages_sent.append({"from": "jon", "to": "davos", "type": "ceo_welcome"})
 
@@ -386,7 +386,7 @@ class ClientOnboardingService:
                 to_agent="jon",
                 content=davos_welcome,
                 message_type="welcome",
-                metadata={"client_id": client_id},
+                extra_metadata={"client_id": client_id},
             ))
             messages_sent.append({"from": "davos", "to": "jon", "type": "client_success_welcome"})
 
@@ -402,7 +402,7 @@ class ClientOnboardingService:
                 to_agent="jon",
                 content=brienne_task,
                 message_type="task",
-                metadata={"client_id": client_id, "action": "setup_project"},
+                extra_metadata={"client_id": client_id, "action": "setup_project"},
             ))
             messages_sent.append({"from": "brienne", "to": "jon", "type": "project_setup"})
 
@@ -424,7 +424,7 @@ class ClientOnboardingService:
                         to_agent=agent_id,
                         content=welcome_msg,
                         message_type="welcome",
-                        metadata={"client_id": client_id, "agent_role": agent_info.get("role", "")},
+                        extra_metadata={"client_id": client_id, "agent_role": agent_info.get("role", "")},
                     ))
                     messages_sent.append({"from": "jon", "to": agent_id, "type": "agent_assignment"})
 

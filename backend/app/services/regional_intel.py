@@ -1,5 +1,5 @@
 """
-Claude Mythos — Regional Intelligence Engine
+Fankaar Digital — Regional Intelligence Engine
 Researches regions via web search, builds RegionalProfile with
 culture, platforms, best times, CTAs, personas. Caches in SQLite.
 """

@@ -1,5 +1,5 @@
 """
-Claude Mythos — Agent Memory System
+Fankaar Digital — Agent Memory System
 SQLite-based persistent memory for agents: conversation history,
 state management, and context storage.
 """
@@ -38,7 +38,7 @@ class AgentMemory:
         from_agent: Optional[str] = None,
         to_agent: Optional[str] = None,
         message_type: str = "chat",
-        metadata: Optional[Dict[str, Any]] = None,
+        extra_metadata: Optional[Dict[str, Any]] = None,
         campaign_id: Optional[str] = None,
     ) -> str:
         """Store a message in the agent's conversation history."""
@@ -51,7 +51,7 @@ class AgentMemory:
                 content=content,
                 timestamp=datetime.utcnow(),
                 message_type=message_type,
-                metadata=metadata or {},
+                extra_metadata=extra_metadata or {},
                 campaign_id=campaign_id,
             )
             db.add(msg)
@@ -101,7 +101,7 @@ class AgentMemory:
                     "content": m.content,
                     "timestamp": m.timestamp.isoformat() if m.timestamp else None,
                     "message_type": m.message_type,
-                    "metadata": m.metadata,
+                    "extra_metadata": m.extra_metadata,
                     "campaign_id": m.campaign_id,
                     "read": bool(m.read),
                 }
@@ -138,7 +138,7 @@ class AgentMemory:
                 content=f"STATE:{key}={json.dumps(value)}",
                 timestamp=datetime.utcnow(),
                 message_type="system",
-                metadata={"state_key": key, "state_value": value},
+                extra_metadata={"state_key": key, "state_value": value},
             )
             db.add(msg)
             db.commit()
@@ -160,8 +160,8 @@ class AgentMemory:
                 .first()
             )
 
-            if msg and msg.metadata:
-                return msg.metadata.get("state_value", default)
+            if msg and msg.extra_metadata:
+                return msg.extra_metadata.get("state_value", default)
             return default
         finally:
             db.close()
@@ -281,7 +281,7 @@ class SharedMemory:
         from_agent: str,
         content: str,
         message_type: str = "alert",
-        metadata: Optional[Dict[str, Any]] = None,
+        extra_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Send a broadcast message to all agents."""
         db = SessionLocal()
@@ -293,7 +293,7 @@ class SharedMemory:
                 content=content,
                 timestamp=datetime.utcnow(),
                 message_type=message_type,
-                metadata=metadata or {},
+                extra_metadata=extra_metadata or {},
             )
             db.add(msg)
             db.commit()
@@ -320,7 +320,7 @@ class SharedMemory:
                     "content": m.content,
                     "timestamp": m.timestamp.isoformat() if m.timestamp else None,
                     "message_type": m.message_type,
-                    "metadata": m.metadata,
+                    "extra_metadata": m.extra_metadata,
                 }
                 for m in reversed(messages)
             ]
@@ -352,7 +352,7 @@ class SharedMemory:
                     "content": m.content,
                     "timestamp": m.timestamp.isoformat() if m.timestamp else None,
                     "message_type": m.message_type,
-                    "metadata": m.metadata,
+                    "extra_metadata": m.extra_metadata,
                     "campaign_id": m.campaign_id,
                 }
                 for m in messages

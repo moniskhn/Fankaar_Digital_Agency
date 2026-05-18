@@ -1,5 +1,5 @@
 """
-Claude Mythos -- Agent Worker Service
+Fankaar Digital -- Agent Worker Service
 Wraps the AgentRuntime in a service layer with start/stop/restart,
 status monitoring, and graceful shutdown handling.
 """

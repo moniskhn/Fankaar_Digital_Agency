@@ -1,5 +1,5 @@
 """
-Claude Mythos — LLM Client
+Fankaar Digital — LLM Client
 Unified interface for Ollama, Anthropic, and OpenAI with fallback chain.
 """
 

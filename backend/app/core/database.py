@@ -1,5 +1,5 @@
 """
-Claude Mythos — SQLite Database Setup with SQLAlchemy
+Fankaar Digital — SQLite Database Setup with SQLAlchemy
 All table models: Agent, Client, Campaign, Task, Message, Report,
 RegionalProfile, ActivityLog, ScheduledPost
 """
@@ -157,7 +157,7 @@ class MessageModel(Base):
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     message_type = Column(String, default="chat")  # chat, task, report, alert, decision
-    metadata = Column(JSON, default=dict)
+    extra_metadata = Column(JSON, default=dict)
     read = Column(Integer, default=0)  # 0 = unread, 1 = read
     campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -233,7 +233,7 @@ class ScheduledPostModel(Base):
     status = Column(String, default="scheduled")  # scheduled, published, failed, cancelled
     posted_at = Column(DateTime, nullable=True)
     engagement_estimate = Column(Float, default=0.0)
-    metadata = Column(JSON, default=dict)
+    extra_metadata = Column(JSON, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -298,6 +298,9 @@ class AgentClientMemoryModel(Base):
     memory_type = Column(String, nullable=False, index=True)
     content = Column(Text, nullable=False)
     campaign_id = Column(String, nullable=True)
+
+
+class ContactSubmissionModel(Base):
     """Public contact form submissions."""
     __tablename__ = "contact_submissions"
 
