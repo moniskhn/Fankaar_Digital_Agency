@@ -1,5 +1,5 @@
 """
-Claude Mythos — Task Router & Orchestrator
+Fankaar Digital — Task Router & Orchestrator
 Routes tasks to the right agent(s), creates campaign workflows,
 handles inter-agent messaging, and tracks workloads.
 """

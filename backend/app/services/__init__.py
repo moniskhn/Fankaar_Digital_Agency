@@ -1,1 +1,1 @@
-# Service modules for Claude Mythos
+# Service modules for Fankaar Digital

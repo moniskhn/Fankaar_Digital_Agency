@@ -1,5 +1,5 @@
 """
-Claude Mythos — SQLite Database Setup with SQLAlchemy
+Fankaar Digital — SQLite Database Setup with SQLAlchemy
 All table models: Agent, Client, Campaign, Task, Message, Report,
 RegionalProfile, ActivityLog, ScheduledPost
 """

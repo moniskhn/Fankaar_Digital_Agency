@@ -1,5 +1,5 @@
 """
-Claude Mythos — Client Onboarding Service
+Fankaar Digital — Client Onboarding Service
 5-step guided onboarding: Business Info, Marketing Goals, Region & Audience,
 Brand Voice, Package Selection. Saves progress, auto-assigns agents, triggers welcome.
 """
@@ -359,7 +359,7 @@ class ClientOnboardingService:
 
             # Welcome message from Jon (CEO) to the client
             ceo_welcome = (
-                f"Welcome to Claude Mythos, {client.name}! I'm Jon, the CEO. "
+                f"Welcome to Fankaar Digital, {client.name}! I'm Jon, the CEO. "
                 f"Your dedicated team is assembled and ready to deliver exceptional results. "
                 f"We'll have our first strategy session scheduled within 24 hours. "
                 f"If you ever need me directly, just send a message."

@@ -1,5 +1,5 @@
 /**
- * Claude Mythos — Jarvis Voice Interface
+ * Fankaar Digital — Jarvis Voice Interface
  * Implements Web Speech API for voice communication with Jon Snow (CEO)
  */
 

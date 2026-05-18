@@ -1,5 +1,5 @@
 """
-Claude Mythos — Configuration Management
+Fankaar Digital — Configuration Management
 Uses pydantic-settings for environment-based configuration.
 """
 
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     owner_name: str = Field(default="Boss", description="Owner's preferred name")
 
     # ── Agency Settings ────────────────────────────────────────────
-    agency_name: str = Field(default="Claude Mythos", description="Agency name")
+    agency_name: str = Field(default="Fankaar Digital", description="Agency name")
     daily_report_time: str = Field(default="09:00", description="Daily report time HH:MM")
     daily_report_timezone: str = Field(default="Asia/Dubai", description="Daily report timezone")
     max_concurrent_campaigns: int = Field(default=10, description="Max concurrent campaigns")
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     )
 
     # ── Database ───────────────────────────────────────────────────
-    database_path: str = Field(default="/app/data/mythos.db", description="SQLite database path")
+    database_path: str = Field(default="/app/data/fankaar.db", description="SQLite database path")
 
     # ── Stripe Billing ─────────────────────────────────────────────
     stripe_secret_key: str = Field(default="", description="Stripe secret API key (sk_test_... or sk_live_...)")

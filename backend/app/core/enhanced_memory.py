@@ -1,5 +1,5 @@
 """
-Claude Mythos -- Enhanced Agent Memory System
+Fankaar Digital -- Enhanced Agent Memory System
 Rich, human-like memory with 4 types:
   A. Episodic Memory  -- "What happened" (events, experiences)
   B. Semantic Memory  -- "What I know" (facts, knowledge, insights)

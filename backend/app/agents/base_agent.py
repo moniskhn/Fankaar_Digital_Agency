@@ -1,5 +1,5 @@
 """
-Claude Mythos -- Base Agent Class
+Fankaar Digital -- Base Agent Class
 Abstract base class for all 23 AI employees.
 """
 
@@ -15,7 +15,7 @@ from app.services.llm_client import llm_client, LLMResponse
 
 class BaseAgent:
     """
-    Base class for all Claude Mythos agents.
+    Base class for all Fankaar Digital agents.
     Provides think (LLM), act (tool execution), memory, and communication.
 
     Uses EnhancedAgentMemory for rich episodic, semantic, procedural,

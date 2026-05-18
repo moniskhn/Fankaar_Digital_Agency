@@ -1,5 +1,5 @@
 """
-Claude Mythos — Campaign Engine
+Fankaar Digital — Campaign Engine
 End-to-end campaign lifecycle management.
 """
 

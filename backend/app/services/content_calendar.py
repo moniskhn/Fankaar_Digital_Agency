@@ -1,5 +1,5 @@
 """
-Claude Mythos — Content Calendar
+Fankaar Digital — Content Calendar
 Timezone-aware scheduling, optimal posting time calculation,
 and content calendar generation.
 """

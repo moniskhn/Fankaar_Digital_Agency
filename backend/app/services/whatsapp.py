@@ -1,5 +1,5 @@
 """
-Claude Mythos — WhatsApp Integration (Twilio)
+Fankaar Digital — WhatsApp Integration (Twilio)
 Send/receive messages via Twilio WhatsApp API.
 """
 

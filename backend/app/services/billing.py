@@ -1,5 +1,5 @@
 """
-Claude Mythos — Stripe Billing Integration
+Fankaar Digital — Stripe Billing Integration
 Complete subscription billing: checkout sessions, webhooks, invoices,
 billing portal, usage tracking, and revenue metrics.
 """
@@ -126,7 +126,7 @@ class SubscriptionStore:
 
 class BillingService:
     """
-    Complete Stripe billing integration for Claude Mythos.
+    Complete Stripe billing integration for Fankaar Digital.
     Handles subscriptions, invoices, usage tracking, and revenue metrics.
     """
 
@@ -240,7 +240,7 @@ class BillingService:
                     "price_data": {
                         "currency": "usd",
                         "product_data": {
-                            "name": f"Claude Mythos — {package['name']} ({billing_cycle.title()})",
+                            "name": f"Fankaar Digital — {package['name']} ({billing_cycle.title()})",
                             "description": package["description"],
                         },
                         "unit_amount": unit_amount,

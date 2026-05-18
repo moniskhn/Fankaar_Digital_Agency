@@ -1,5 +1,5 @@
 """
-Claude Mythos — Agent Memory System
+Fankaar Digital — Agent Memory System
 SQLite-based persistent memory for agents: conversation history,
 state management, and context storage.
 """

@@ -748,7 +748,7 @@ class AgentRuntime:
 
         # Agent identity
         parts.append(
-            f"You are {agent_config.full_name}, {agent_config.title} at Claude Mythos."
+            f"You are {agent_config.full_name}, {agent_config.title} at Fankaar Digital."
         )
 
         # Campaign context

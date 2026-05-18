@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app/ ./app/
 
 ENV PYTHONPATH=/app
-ENV DATABASE_PATH=/app/data/mythos.db
+ENV DATABASE_PATH=/app/data/fankaar.db
 
 RUN mkdir -p /app/data && chmod 777 /app/data
 
