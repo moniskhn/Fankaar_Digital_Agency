@@ -72,6 +72,8 @@ class LLMClient:
                     return await self._call_anthropic(prompt, system, temp, max_tok, structured_output)
                 elif provider == "openai":
                     return await self._call_openai(prompt, system, temp, max_tok, structured_output)
+                elif provider == "moonshot":
+                    return await self._call_moonshot(prompt, system, temp, max_tok, structured_output)
             except Exception as e:
                 last_error = e
                 continue
@@ -240,6 +242,59 @@ class LLMClient:
             text=text,
             provider="openai",
             model=settings.openai_model,
+            latency_ms=latency,
+            tokens_used=usage.get("total_tokens", 0),
+        )
+
+    async def _call_moonshot(
+        self,
+        prompt: str,
+        system: Optional[str],
+        temperature: float,
+        max_tokens: int,
+        structured_output: Optional[Dict[str, Any]],
+    ) -> LLMResponse:
+        """Call Moonshot (Kimi) API — OpenAI-compatible."""
+        if not settings.moonshot_api_key:
+            raise ValueError("Moonshot API key not configured")
+
+        url = f"{settings.moonshot_base_url.rstrip('/')}/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {settings.moonshot_api_key}",
+            "Content-Type": "application/json",
+        }
+
+        messages: List[Dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        payload: Dict[str, Any] = {
+            "model": settings.moonshot_model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+
+        if structured_output:
+            payload["response_format"] = {"type": "json_object"}
+
+        start = time.time()
+        async with httpx.AsyncClient(timeout=settings.llm_timeout) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+
+        latency = (time.time() - start) * 1000
+        choice = data.get("choices", [{}])[0]
+        text = choice.get("message", {}).get("content", "").strip()
+
+        usage = data.get("usage", {})
+
+        return LLMResponse(
+            text=text,
+            provider="moonshot",
+            model=settings.moonshot_model,
             latency_ms=latency,
             tokens_used=usage.get("total_tokens", 0),
         )

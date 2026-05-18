@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     anthropic_model: str = Field(default="claude-3-5-sonnet-20241022", description="Anthropic model name")
     openai_api_key: str = Field(default="", description="OpenAI API key")
     openai_model: str = Field(default="gpt-4o-mini", description="OpenAI model name")
+    moonshot_api_key: str = Field(default="", description="Moonshot (Kimi) API key")
+    moonshot_model: str = Field(default="kimi-latest", description="Moonshot model name")
+    moonshot_base_url: str = Field(default="https://api.moonshot.ai/v1", description="Moonshot API base URL")
     llm_temperature: float = Field(default=0.7, description="LLM sampling temperature")
     llm_max_tokens: int = Field(default=4096, description="Max tokens per LLM response")
     llm_timeout: int = Field(default=120, description="LLM request timeout in seconds")
@@ -104,7 +107,7 @@ class Settings(BaseSettings):
     def llm_fallback_chain(self) -> List[str]:
         """LLM provider fallback chain."""
         providers = [self.llm_provider]
-        all_providers = ["anthropic", "openai", "ollama"]
+        all_providers = ["moonshot", "anthropic", "openai", "ollama"]
         for p in all_providers:
             if p not in providers:
                 providers.append(p)
