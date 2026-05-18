@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Mythos — Jarvis Command</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="jarvis-container">
+        <header>
+            <h1>CLAUDE MYTHOS</h1>
+            <div class="system-status">
+                <span class="status-dot online"></span>
+                <span class="status-text">SYSTEM ONLINE</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="visualizer-container">
+                <div class="arc-reactor">
+                    <div class="core"></div>
+                    <div class="ring-1"></div>
+                    <div class="ring-2"></div>
+                    <div class="ring-3"></div>
+                </div>
+            </div>
+
+            <div class="transcript-container">
+                <p id="transcript" class="waiting">Awaiting command...</p>
+                <p id="response-text" class="jarvis-response"></p>
+            </div>
+
+            <div class="controls">
+                <button id="mic-btn" class="mic-inactive">
+                    <span class="mic-icon">🎙️</span>
+                </button>
+                <p class="instruction">Tap to speak with Jon Snow</p>
+            </div>
+        </main>
+
+        <footer>
+            <div class="stats-bar">
+                <div class="stat">CPU: <span id="cpu-load">4.2%</span></div>
+                <div class="stat">AGENTS: <span id="agent-count">23</span></div>
+                <div class="stat">REGION: <span id="current-region">DUBAI</span></div>
+            </div>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

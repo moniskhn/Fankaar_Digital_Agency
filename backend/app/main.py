@@ -9,6 +9,8 @@ from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -59,13 +61,26 @@ async def health_check():
 
 @app.get("/")
 async def root():
+    # Try different locations for frontend
+    paths = [
+        "frontend/index.html",
+        "../frontend/index.html",
+        "/app/frontend/index.html"
+    ]
+    for p in paths:
+        if os.path.exists(p):
+            return FileResponse(p)
+
     return {
         "name": getattr(settings, 'agency_name', 'Claude Mythos'),
         "version": "1.0.0",
         "health": "/health",
         "docs": "/docs",
         "api": "/api",
+        "message": "Frontend not found at expected paths"
     }
+
+# Load All Routers - defined later
 
 logger.info("FastAPI app created")
 
@@ -99,6 +114,18 @@ def load_routers():
     logger.info(f"Loaded {loaded}/{len(router_map)} routers")
 
 load_routers()
+
+# Mount static files after routers to avoid overriding API paths
+try:
+    if os.path.exists("frontend"):
+        app.mount("/static", StaticFiles(directory="frontend"), name="static")
+        # Also serve everything from root of frontend for JS/CSS imports
+        app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+    elif os.path.exists("../frontend"):
+        app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+        app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+except Exception as e:
+    logger.warning(f"Could not mount static files: {e}")
 
 # ── Background DB Init ─────────────────────────────────────────
 def bg_init():

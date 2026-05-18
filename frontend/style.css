@@ -1,0 +1,199 @@
+:root {
+    --jarvis-blue: #00d2ff;
+    --jarvis-glow: rgba(0, 210, 255, 0.5);
+    --dark-bg: #050505;
+    --panel-bg: rgba(20, 20, 20, 0.8);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.jarvis-container {
+    width: 100%;
+    max-width: 800px;
+    height: 90vh;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    position: relative;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 210, 255, 0.3);
+    padding-bottom: 10px;
+}
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 4px;
+    color: var(--jarvis-blue);
+    text-shadow: 0 0 10px var(--jarvis-glow);
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #555;
+}
+
+.status-dot.online {
+    background-color: #00ff00;
+    box-shadow: 0 0 5px #00ff00;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+}
+
+.visualizer-container {
+    perspective: 1000px;
+}
+
+.arc-reactor {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.core {
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #fff, 0 0 40px var(--jarvis-blue);
+}
+
+[class^="ring-"] {
+    position: absolute;
+    border: 2px solid var(--jarvis-blue);
+    border-radius: 50%;
+    opacity: 0.5;
+    box-shadow: 0 0 10px var(--jarvis-glow);
+}
+
+.ring-1 { width: 80px; height: 80px; animation: rotate 4s linear infinite; border-style: dashed; }
+.ring-2 { width: 130px; height: 130px; animation: rotate-rev 6s linear infinite; border-width: 4px; border-left-color: transparent; border-right-color: transparent; }
+.ring-3 { width: 180px; height: 180px; animation: rotate 10s linear infinite; border-style: dotted; }
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes rotate-rev {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.transcript-container {
+    text-align: center;
+    max-width: 600px;
+    min-height: 100px;
+}
+
+#transcript {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+#transcript.waiting { opacity: 0.5; font-style: italic; }
+
+.jarvis-response {
+    color: var(--jarvis-blue);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    text-shadow: 0 0 5px rgba(0, 210, 255, 0.3);
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#mic-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mic-icon { font-size: 2rem; }
+
+#mic-btn.listening {
+    background: var(--jarvis-blue);
+    box-shadow: 0 0 30px var(--jarvis-blue);
+    transform: scale(1.1);
+}
+
+.instruction {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+}
+
+.stats-bar {
+    display: flex;
+    justify-content: space-around;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    color: var(--jarvis-blue);
+}
+
+.stat span {
+    color: #fff;
+    margin-left: 5px;
+}
