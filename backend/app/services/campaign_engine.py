@@ -11,12 +11,12 @@ from sqlalchemy.orm import Session
 
 from app.core.database import (
     CampaignModel,
-    Deliverable,
     SessionLocal,
     TaskModel,
 )
 from app.core.models import (
     Campaign,
+    Deliverable,
     CampaignBrief,
     CampaignPhaseUpdate,
     CampaignReport,

@@ -4,6 +4,7 @@ Abstract base class for all 23 AI employees.
 """
 
 import json
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from app.core.enhanced_memory import EnhancedAgentMemory
@@ -224,7 +225,7 @@ class BaseAgent:
         message: str,
         message_type: str = "chat",
         campaign_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        extra_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Send a message to another agent or the owner.
@@ -234,7 +235,7 @@ class BaseAgent:
             message: Message content
             message_type: Type of message
             campaign_id: Optional associated campaign
-            metadata: Optional metadata
+            extra_metadata: Optional metadata
 
         Returns:
             Message ID
@@ -244,7 +245,7 @@ class BaseAgent:
             from_agent=self.id,
             to_agent=to,
             message_type=message_type,
-            metadata=metadata or {},
+            extra_metadata=extra_metadata or {},
             campaign_id=campaign_id,
         )
 
@@ -377,3 +378,18 @@ class BaseAgent:
 
     def __repr__(self) -> str:
         return f"BaseAgent({self.id}={self.full_name}, status={self.config.status})"
+
+    async def schedule_post(self, campaign_id: str, platform: str, content_type: str, content_text: str, scheduled_time: datetime, extra_metadata: Optional[Dict[str, Any]] = None) -> Any:
+        """Tool: Schedule a social media post."""
+        from app.services.content_calendar import content_calendar
+        from app.core.models import ScheduledPostCreate
+
+        post_create = ScheduledPostCreate(
+            campaign_id=campaign_id,
+            platform=platform,
+            content_type=content_type,
+            content_text=content_text,
+            scheduled_time=scheduled_time,
+            extra_metadata=extra_metadata or {}
+        )
+        return await content_calendar.add_scheduled_post(post_create)

@@ -611,7 +611,7 @@ class InterAgentMessaging:
         content: str,
         message_type: str = "chat",
         campaign_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        extra_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Send a message from one agent to another."""
         db = SessionLocal()
@@ -623,7 +623,7 @@ class InterAgentMessaging:
                 content=content,
                 timestamp=datetime.utcnow(),
                 message_type=message_type,
-                metadata=metadata or {},
+                extra_metadata=extra_metadata or {},
                 campaign_id=campaign_id,
             )
             db.add(msg)
@@ -637,7 +637,7 @@ class InterAgentMessaging:
         from_agent: str,
         content: str,
         message_type: str = "alert",
-        metadata: Optional[Dict[str, Any]] = None,
+        extra_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Broadcast a message to all agents."""
         db = SessionLocal()
@@ -649,7 +649,7 @@ class InterAgentMessaging:
                 content=content,
                 timestamp=datetime.utcnow(),
                 message_type=message_type,
-                metadata=metadata or {},
+                extra_metadata=extra_metadata or {},
             )
             db.add(msg)
             db.commit()
@@ -685,7 +685,7 @@ class InterAgentMessaging:
                     "content": m.content,
                     "timestamp": m.timestamp.isoformat() if m.timestamp else None,
                     "message_type": m.message_type,
-                    "metadata": m.metadata,
+                    "extra_metadata": m.extra_metadata,
                     "campaign_id": m.campaign_id,
                     "read": bool(m.read),
                 }

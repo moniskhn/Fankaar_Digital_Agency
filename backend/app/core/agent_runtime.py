@@ -931,7 +931,7 @@ class AgentRuntime:
                     content=msg,
                     message_type="task",
                     campaign_id=task.campaign_id,
-                    metadata={
+                    extra_metadata={
                         "task_id": task.id,
                         "status": "completed",
                         "deliverable_length": len(result),
@@ -959,7 +959,7 @@ class AgentRuntime:
                             content=msg,
                             message_type="task",
                             campaign_id=task.campaign_id,
-                            metadata={
+                            extra_metadata={
                                 "completed_task_id": task.id,
                                 "completed_by": task.assigned_to,
                             },
@@ -978,7 +978,7 @@ class AgentRuntime:
                             f"a {task.priority}-priority task: '{task.title}'"
                         ),
                         message_type="alert",
-                        metadata={
+                        extra_metadata={
                             "task_id": task.id,
                             "campaign_id": task.campaign_id,
                             "priority": task.priority,
@@ -1105,7 +1105,7 @@ class AgentRuntime:
                         f"{next_phase.upper()} phase. New tasks have been auto-generated."
                     ),
                     message_type="alert",
-                    metadata={
+                    extra_metadata={
                         "campaign_id": campaign_id,
                         "old_phase": current_phase,
                         "new_phase": next_phase,
@@ -1283,7 +1283,7 @@ class AgentRuntime:
                 content=msg,
                 message_type="alert",
                 campaign_id=task.campaign_id,
-                metadata={"task_id": task.id, "escalation": True},
+                extra_metadata={"task_id": task.id, "escalation": True},
             )
             self._stats["messages_sent"] += 1
 
@@ -1348,10 +1348,10 @@ class AgentRuntime:
     async def _handle_collaboration_request(self, message: Dict[str, Any]) -> None:
         """Handle a collaboration request between agents."""
         try:
-            metadata = message.get("metadata", {})
+            extra_metadata = message.get("extra_metadata", {})
             requesting_agent = message.get("from_agent")
-            target_agent = metadata.get("target_agent")
-            task_description = metadata.get("task_description", "")
+            target_agent = extra_metadata.get("target_agent")
+            task_description = extra_metadata.get("task_description", "")
 
             if not target_agent or not task_description:
                 return
@@ -1361,13 +1361,13 @@ class AgentRuntime:
             try:
                 task = TaskModel(
                     id=str(uuid.uuid4()),
-                    campaign_id=metadata.get("campaign_id"),
+                    campaign_id=extra_metadata.get("campaign_id"),
                     assigned_to=target_agent,
                     assigned_by=requesting_agent,
                     title=f"Collaboration: {task_description[:80]}",
                     description=task_description,
                     status="pending",
-                    priority=metadata.get("priority", "medium"),
+                    priority=extra_metadata.get("priority", "medium"),
                 )
                 db.add(task)
                 db.commit()
@@ -1381,8 +1381,8 @@ class AgentRuntime:
                         f"A new task has been created for you."
                     ),
                     message_type="task",
-                    campaign_id=metadata.get("campaign_id"),
-                    metadata={"task_id": task.id},
+                    campaign_id=extra_metadata.get("campaign_id"),
+                    extra_metadata={"task_id": task.id},
                 )
                 self._stats["messages_sent"] += 1
             finally:

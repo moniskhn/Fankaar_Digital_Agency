@@ -567,7 +567,8 @@ class JonCEO(BaseAgent):
                 content=f"New task from the CEO: {task_description}",
                 timestamp=datetime.utcnow(),
                 message_type="task",
-                metadata={"task_id": task.id, "priority": priority, "campaign_id": campaign_id},
+                campaign_id=campaign_id,
+                extra_metadata={"task_id": task.id, "priority": priority, "campaign_id": campaign_id},
             )
             db.add(msg)
             db.commit()

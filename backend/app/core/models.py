@@ -300,7 +300,7 @@ class Message(MythosBaseModel):
     content: str
     timestamp: datetime
     message_type: str = "chat"  # chat, task, report, alert, decision
-    metadata: Dict[str, Any] = {}
+    extra_metadata: Dict[str, Any] = {}
     read: bool = False
     campaign_id: Optional[str] = None
 
@@ -310,7 +310,7 @@ class MessageCreate(BaseModel):
     to_agent: str
     content: str
     message_type: str = "chat"
-    metadata: Dict[str, Any] = {}
+    extra_metadata: Dict[str, Any] = {}
     campaign_id: Optional[str] = None
 
 
@@ -415,7 +415,7 @@ class ScheduledPost(MythosBaseModel):
     status: str = "scheduled"
     posted_at: Optional[datetime] = None
     engagement_estimate: float = 0.0
-    metadata: Dict[str, Any] = {}
+    extra_metadata: Dict[str, Any] = {}
 
 
 class ScheduledPostCreate(BaseModel):
@@ -426,6 +426,7 @@ class ScheduledPostCreate(BaseModel):
     media_urls: List[str] = []
     scheduled_time: datetime
     timezone: str = "UTC"
+    extra_metadata: Dict[str, Any] = {}
 
 
 # ═══════════════════════════════════════════════════════════════

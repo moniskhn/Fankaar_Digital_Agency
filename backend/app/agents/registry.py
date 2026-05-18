@@ -6,7 +6,7 @@ personalities, skills, tools, and reporting structures.
 Game of Thrones themed digital marketing agency employees.
 """
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from app.core.models import Agent
 
