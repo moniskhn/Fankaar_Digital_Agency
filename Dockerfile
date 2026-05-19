@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc libsqlite3-
 
 # Copy requirements from repo root (NOT backend/)
 # Cache-bust: force rebuild on every push
-ARG BUILD_TIMESTAMP=2026-05-19-2209
+ARG BUILD_TIMESTAMP=2026-05-20-0209
 RUN echo "Build: ${BUILD_TIMESTAMP}" > /app/.buildstamp
 
 COPY requirements.txt ./requirements.txt
