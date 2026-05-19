@@ -1,6 +1,6 @@
 /**
- * Fankaar Digital — Jarvis Command Interface v3
- * Cache-bust: 2026-05-19-2350
+ * Fankaar Digital — Jarvis Command Interface v4
+ * Cache-bust: 2026-05-20-0025
  */
 
 const API_BASE = '';
@@ -49,6 +49,9 @@ tabBtns.forEach(btn => {
 
         if (tabId === 'report') loadDailyReport();
         if (tabId === 'agents') loadAgents();
+        if (tabId === 'clients') loadClients();
+        if (tabId === 'schedule') loadSchedule();
+        if (tabId === 'deliverables') loadDeliverables();
     });
 });
 
@@ -248,6 +251,214 @@ function renderAgents(agents) {
     agentGrid.innerHTML = html;
     document.getElementById('agent-total').textContent = agents.length;
     document.getElementById('agent-count').textContent = agents.length;
+}
+
+// ── Clients ────────────────────────────────────────────────
+let clientsCache = null;
+const clientList = document.getElementById('client-list');
+const clientForm = document.getElementById('client-form');
+const addClientBtn = document.getElementById('add-client-btn');
+const saveClientBtn = document.getElementById('save-client');
+const cancelClientBtn = document.getElementById('cancel-client');
+
+async function loadClients() {
+    if (clientsCache) {
+        renderClients(clientsCache);
+        return;
+    }
+    clientList.innerHTML = '<div class="loading">Loading clients...</div>';
+
+    try {
+        const response = await fetchWithTimeout(`${API_BASE}/api/clients`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        clientsCache = data;
+        renderClients(data);
+    } catch (err) {
+        let msg = "Error loading clients.";
+        if (err.name === 'AbortError') msg = "⏱️ Timed out. Click Clients tab again to retry.";
+        clientList.innerHTML = `<div class="loading">${msg}</div>`;
+    }
+}
+
+function renderClients(clients) {
+    if (!clients || clients.length === 0) {
+        clientList.innerHTML = '<div class="loading">No clients yet. Click + Add Client to create one.</div>';
+        return;
+    }
+    const html = clients.map(c => `
+        <div class="client-card">
+            <div class="client-name">${escapeHtml(c.name)}</div>
+            <div class="client-meta">${escapeHtml(c.industry || '')} · ${escapeHtml(c.region || '')} · ${escapeHtml(c.contact_email || '')}</div>
+            <span class="client-status">${escapeHtml(c.status || 'active')}</span>
+        </div>
+    `).join('');
+    clientList.innerHTML = html;
+}
+
+addClientBtn.addEventListener('click', () => {
+    clientForm.classList.remove('hidden');
+    clientList.style.display = 'none';
+    addClientBtn.style.display = 'none';
+});
+
+cancelClientBtn.addEventListener('click', () => {
+    clientForm.classList.add('hidden');
+    clientList.style.display = 'flex';
+    addClientBtn.style.display = 'inline-block';
+});
+
+saveClientBtn.addEventListener('click', async () => {
+    const name = document.getElementById('client-name').value.trim();
+    const industry = document.getElementById('client-industry').value.trim();
+    const region = document.getElementById('client-region').value.trim();
+    const contact = document.getElementById('client-contact').value.trim();
+
+    if (!name) {
+        alert('Company name is required');
+        return;
+    }
+
+    try {
+        const response = await fetchWithTimeout(`${API_BASE}/api/clients`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name, industry, region,
+                contact_email: contact,
+                contact_name: '',
+                timezone: 'Asia/Dubai',
+                target_audience: '',
+                brand_voice: '',
+                goals: [],
+                budget_range: '',
+                notes: ''
+            })
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        // Reset form and reload
+        document.getElementById('client-name').value = '';
+        document.getElementById('client-industry').value = '';
+        document.getElementById('client-region').value = '';
+        document.getElementById('client-contact').value = '';
+        clientForm.classList.add('hidden');
+        clientList.style.display = 'flex';
+        addClientBtn.style.display = 'inline-block';
+        clientsCache = null;
+        loadClients();
+    } catch (err) {
+        alert('Failed to save client: ' + (err.message || 'Unknown error'));
+    }
+});
+
+// ── Schedule ───────────────────────────────────────────────
+let scheduleCache = null;
+const scheduleContent = document.getElementById('schedule-content');
+
+async function loadSchedule() {
+    if (scheduleCache) {
+        renderSchedule(scheduleCache);
+        return;
+    }
+    scheduleContent.innerHTML = '<div class="loading">Loading schedule...</div>';
+
+    try {
+        const response = await fetchWithTimeout(`${API_BASE}/api/calendar/upcoming?hours=168`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        scheduleCache = data;
+        renderSchedule(data);
+    } catch (err) {
+        let msg = "Error loading schedule.";
+        if (err.name === 'AbortError') msg = "⏱️ Timed out. Click Schedule tab again to retry.";
+        scheduleContent.innerHTML = `<div class="loading">${msg}</div>`;
+    }
+}
+
+function renderSchedule(posts) {
+    if (!posts || posts.length === 0) {
+        scheduleContent.innerHTML = '<div class="loading">No upcoming posts scheduled. Create a campaign and generate a calendar to see content here.</div>';
+        return;
+    }
+    const html = posts.map(p => {
+        const time = new Date(p.scheduled_time).toLocaleString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        return `
+        <div class="schedule-item">
+            <div class="schedule-time">${escapeHtml(time)}</div>
+            <div class="schedule-text">${escapeHtml(p.content_text || 'Scheduled post')}</div>
+            <div class="schedule-platform">${escapeHtml(p.platform || 'general')}</div>
+        </div>
+        `;
+    }).join('');
+    scheduleContent.innerHTML = html;
+}
+
+// ── Deliverables ───────────────────────────────────────────
+let deliverablesCache = null;
+const deliverablesContent = document.getElementById('deliverables-content');
+
+async function loadDeliverables() {
+    if (deliverablesCache) {
+        renderDeliverables(deliverablesCache);
+        return;
+    }
+    deliverablesContent.innerHTML = '<div class="loading">Loading deliverables...</div>';
+
+    try {
+        // Try to get campaign tasks as deliverables
+        const response = await fetchWithTimeout(`${API_BASE}/api/campaigns`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const campaigns = await response.json();
+
+        // Fetch tasks for each campaign
+        const allTasks = [];
+        for (const camp of campaigns.slice(0, 5)) {
+            try {
+                const tr = await fetchWithTimeout(`${API_BASE}/api/campaigns/${camp.id}/tasks`);
+                if (tr.ok) {
+                    const tasks = await tr.json();
+                    tasks.forEach(t => allTasks.push({
+                        title: t.title,
+                        campaign: camp.campaign_name || camp.name,
+                        status: t.status,
+                        assignee: t.assigned_to,
+                        deliverable: t.deliverable || 'Pending'
+                    }));
+                }
+            } catch (e) { /* ignore per-campaign errors */ }
+        }
+
+        deliverablesCache = allTasks;
+        renderDeliverables(allTasks);
+    } catch (err) {
+        let msg = "Error loading deliverables.";
+        if (err.name === 'AbortError') msg = "⏱️ Timed out. Click Deliverables tab again to retry.";
+        deliverablesContent.innerHTML = `<div class="loading">${msg}</div>`;
+    }
+}
+
+function renderDeliverables(tasks) {
+    if (!tasks || tasks.length === 0) {
+        deliverablesContent.innerHTML = '<div class="loading">No deliverables yet. Create a campaign and assign tasks with deliverables to see them here.</div>';
+        return;
+    }
+    const statusClass = s => {
+        if (s === 'completed' || s === 'done') return 'status-done';
+        if (s === 'blocked' || s === 'failed') return 'status-blocked';
+        return 'status-pending';
+    };
+    const html = tasks.map(t => `
+        <div class="deliverable-item">
+            <div class="deliverable-title">${escapeHtml(t.title)}</div>
+            <div class="deliverable-meta">${escapeHtml(t.campaign)} · ${escapeHtml(t.assignee)}</div>
+            <span class="deliverable-status ${statusClass(t.status)}">${escapeHtml(t.status)}</span>
+        </div>
+    `).join('');
+    deliverablesContent.innerHTML = html;
 }
 
 // ── Random Stats ───────────────────────────────────────────

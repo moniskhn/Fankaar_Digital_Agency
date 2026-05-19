@@ -1,4 +1,4 @@
-/* Fankaar Digital v3 — Cache-bust: 2026-05-19-2350 */
+/* Fankaar Digital v4 — Cache-bust: 2026-05-20-0025 */
 :root {
     --jarvis-blue: #00d2ff;
     --jarvis-glow: rgba(0, 210, 255, 0.5);
@@ -449,10 +449,279 @@ footer {
     margin-left: 5px;
 }
 
-/* Mobile */
-@media (max-width: 600px) {
-    .jarvis-container { max-width: 100%; height: 100vh; border: none; }
-    .agent-grid { grid-template-columns: 1fr; }
-    h1 { font-size: 1rem; }
-    .tab-btn { font-size: 0.65rem; padding: 10px 5px; }
+/* Clients Tab */
+.clients-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
 }
+
+.clients-container h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    color: var(--jarvis-blue);
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.client-toolbar {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    background: var(--jarvis-orange);
+    border: none;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #ff8c5a;
+}
+
+.client-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.client-card {
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.client-card:hover {
+    border-color: var(--jarvis-blue);
+    background: rgba(0,210,255,0.05);
+}
+
+.client-card .client-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    color: var(--jarvis-blue);
+    margin-bottom: 4px;
+}
+
+.client-card .client-meta {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+}
+
+.client-card .client-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(0,255,0,0.1);
+    color: #00ff00;
+    border: 1px solid rgba(0,255,0,0.3);
+}
+
+/* Client Form */
+.client-form {
+    padding: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.client-form.hidden {
+    display: none;
+}
+
+.client-form h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    color: var(--jarvis-orange);
+    margin-bottom: 8px;
+}
+
+.client-form input {
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.client-form input:focus {
+    border-color: var(--jarvis-blue);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.save-btn, .cancel-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border: none;
+}
+
+.save-btn {
+    background: var(--jarvis-blue);
+    color: #000;
+}
+
+.cancel-btn {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+/* Schedule Tab */
+.schedule-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+}
+
+.schedule-container h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    color: var(--jarvis-blue);
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.schedule-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.schedule-item {
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schedule-item .schedule-time {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    color: var(--jarvis-orange);
+    min-width: 120px;
+}
+
+.schedule-item .schedule-text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.85);
+    padding: 0 15px;
+}
+
+.schedule-item .schedule-platform {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    background: rgba(0,210,255,0.1);
+    color: var(--jarvis-blue);
+    border: 1px solid var(--border-color);
+}
+
+/* Deliverables Tab */
+.deliverables-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+}
+
+.deliverables-container h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    color: var(--jarvis-blue);
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.deliverables-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.deliverable-item {
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+}
+
+.deliverable-item .deliverable-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    color: var(--jarvis-blue);
+    margin-bottom: 6px;
+}
+
+.deliverable-item .deliverable-meta {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+}
+
+.deliverable-item .deliverable-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-pending {
+    background: rgba(255,193,7,0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255,193,7,0.3);
+}
+
+.status-done {
+    background: rgba(0,255,0,0.1);
+    color: #00ff00;
+    border: 1px solid rgba(0,255,0,0.3);
+}
+
+.status-blocked {
+    background: rgba(255,0,0,0.1);
+    color: #ff4444;
+    border: 1px solid rgba(255,0,0,0.3);
+}
+

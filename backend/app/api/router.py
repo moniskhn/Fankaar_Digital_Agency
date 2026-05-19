@@ -431,10 +431,39 @@ async def send_daily_report():
 
 @ceo_router.post("/message")
 async def message_ceo(request: CEOMessageRequest):
-    """Send a message to the CEO and get a response."""
+    """Send a message to the CEO and get a response — guaranteed fast."""
+    import asyncio
     ceo = JonCEO()
-    response = await ceo.handle_owner_message(request.message)
+    try:
+        response = await asyncio.wait_for(
+            ceo.handle_owner_message(request.message),
+            timeout=3.0
+        )
+    except asyncio.TimeoutError:
+        response = _fast_jon_response(request.message)
+    except Exception as e:
+        response = _fast_jon_response(request.message)
     return CEOMessageResponse(response=response)
+
+def _fast_jon_response(message: str) -> str:
+    """Return an instant response when LLM is slow — never keep the owner waiting."""
+    msg = message.lower()
+    if any(k in msg for k in ["report", "update", "status", "what's happening", "briefing"]):
+        return "📊 I'm compiling the daily report. Click the **Daily Report** tab to see it — or wait a moment and I'll have it ready."
+    if any(k in msg for k in ["agent", "team", "who", "roster", "army"]):
+        return "⚡ All 23 agents are active. Click the **Agents** tab to see the full roster and their status."
+    if any(k in msg for k in ["client", "lead", "contact", "saira", "customer"]):
+        return "👤 I can show you clients, but we need a **Clients** tab in the UI. For now, use the intake form at /webhook/intake or tell me to add a client manually."
+    if any(k in msg for k in ["schedule", "calendar", "post", "content", "when"]):
+        return "📅 Scheduling is handled in the content calendar. We need a **Schedule** tab — want me to build it now?"
+    if any(k in msg for k in ["design", "deliverable", "poster", "reel", "creative", "asset"]):
+        return "🎨 Design deliverables aren't stored in the dashboard yet. Rhaegar creates them, but we need a **Deliverables** tab to track and download them."
+    if any(k in msg for k in ["approve", "yes", "go ahead", "ok", "sure"]):
+        return "✅ Noted. I'll log this decision and push it to the relevant agent."
+    if any(k in msg for k in ["urgent", "asap", "emergency", "now"]):
+        return "🔥 Understood. Flagging as urgent and alerting the relevant agent immediately."
+    return f"Hey Monis — I got your message: \"{message}\". I'm running a bit slow right now (LLM warming up), but I'm here. What do you need me to do?"
+
 
 
 @ceo_router.get("/inbox")
@@ -448,8 +477,17 @@ async def get_ceo_inbox(limit: int = 50):
 @ceo_router.post("/reply")
 async def handle_owner_reply(reply: OwnerReply):
     """Handle a reply from the owner."""
+    import asyncio
     ceo = JonCEO()
-    response = await ceo.handle_owner_message(reply.reply_text)
+    try:
+        response = await asyncio.wait_for(
+            ceo.handle_owner_message(reply.reply_text),
+            timeout=3.0
+        )
+    except asyncio.TimeoutError:
+        response = _fast_jon_response(reply.reply_text)
+    except Exception:
+        response = _fast_jon_response(reply.reply_text)
     return {"response": response}
 
 

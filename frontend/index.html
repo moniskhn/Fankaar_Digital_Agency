@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fankaar Digital — Jarvis Command</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         /* Critical fallback: tab switching always works even if external CSS cached */
@@ -25,8 +25,11 @@
         <!-- Tab Navigation -->
         <nav class="tab-nav">
             <button class="tab-btn active" data-tab="chat">💬 Chat</button>
-            <button class="tab-btn" data-tab="report">📊 Daily Report</button>
+            <button class="tab-btn" data-tab="report">📊 Report</button>
             <button class="tab-btn" data-tab="agents">⚡ Agents</button>
+            <button class="tab-btn" data-tab="clients">👤 Clients</button>
+            <button class="tab-btn" data-tab="schedule">📅 Schedule</button>
+            <button class="tab-btn" data-tab="deliverables">🎨 Deliverables</button>
         </nav>
 
         <!-- Chat Tab -->
@@ -68,6 +71,50 @@
             </div>
         </section>
 
+        <!-- Clients Tab -->
+        <section class="tab-panel" id="tab-clients">
+            <div class="clients-container">
+                <h2>👤 Clients</h2>
+                <div class="client-toolbar">
+                    <button class="action-btn" id="add-client-btn">+ Add Client</button>
+                </div>
+                <div class="client-list" id="client-list">
+                    <div class="loading">Loading clients...</div>
+                </div>
+                <div class="client-form hidden" id="client-form">
+                    <h3>New Client</h3>
+                    <input type="text" id="client-name" placeholder="Company name">
+                    <input type="text" id="client-industry" placeholder="Industry">
+                    <input type="text" id="client-region" placeholder="Region (e.g. Dubai)">
+                    <input type="text" id="client-contact" placeholder="Contact email">
+                    <div class="form-actions">
+                        <button class="save-btn" id="save-client">Save</button>
+                        <button class="cancel-btn" id="cancel-client">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule Tab -->
+        <section class="tab-panel" id="tab-schedule">
+            <div class="schedule-container">
+                <h2>📅 Content Schedule</h2>
+                <div class="schedule-content" id="schedule-content">
+                    <div class="loading">Loading schedule...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deliverables Tab -->
+        <section class="tab-panel" id="tab-deliverables">
+            <div class="deliverables-container">
+                <h2>🎨 Deliverables & Tasks</h2>
+                <div class="deliverables-content" id="deliverables-content">
+                    <div class="loading">Loading deliverables...</div>
+                </div>
+            </div>
+        </section>
+
         <footer>
             <div class="stats-bar">
                 <div class="stat">CPU: <span id="cpu-load">4.2%</span></div>
@@ -76,6 +123,6 @@
             </div>
         </footer>
     </div>
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 </html>
