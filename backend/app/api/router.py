@@ -949,6 +949,172 @@ async def retry_failed_post(post_id: str):
     return result
 
 
+# ═══════════════════════════════════════════════════════════════
+# CONTENT APPROVAL WORKFLOW
+# ═══════════════════════════════════════════════════════════════
+
+approval_router = APIRouter(prefix="/api/approvals", tags=["Content Approvals"])
+
+@approval_router.get("/client/{client_id}")
+async def get_client_approvals(client_id: str, status: str = None, db: Session = Depends(get_db)):
+    """Get all creative assets awaiting client approval."""
+    from app.core.database import ContentApprovalModel
+    query = db.query(ContentApprovalModel).filter(ContentApprovalModel.client_id == client_id)
+    if status:
+        query = query.filter(ContentApprovalModel.status == status)
+    items = query.order_by(ContentApprovalModel.submitted_at.desc()).all()
+    return [
+        {
+            "id": a.id,
+            "asset_type": a.asset_type,
+            "title": a.title,
+            "description": a.description,
+            "media_url": a.media_url,
+            "content_text": a.content_text,
+            "status": a.status,
+            "agent_id": a.agent_id,
+            "campaign_id": a.campaign_id,
+            "revision_count": a.revision_count,
+            "client_feedback": a.client_feedback,
+            "submitted_at": a.submitted_at.isoformat() if a.submitted_at else None,
+            "reviewed_at": a.reviewed_at.isoformat() if a.reviewed_at else None,
+        }
+        for a in items
+    ]
+
+@approval_router.get("/{approval_id}")
+async def get_approval_detail(approval_id: str, db: Session = Depends(get_db)):
+    """Get single approval item detail."""
+    from app.core.database import ContentApprovalModel
+    item = db.query(ContentApprovalModel).filter(ContentApprovalModel.id == approval_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Approval item not found")
+    return {
+        "id": item.id,
+        "asset_type": item.asset_type,
+        "title": item.title,
+        "description": item.description,
+        "media_url": item.media_url,
+        "content_text": item.content_text,
+        "status": item.status,
+        "agent_id": item.agent_id,
+        "campaign_id": item.campaign_id,
+        "client_id": item.client_id,
+        "revision_count": item.revision_count,
+        "client_feedback": item.client_feedback,
+        "submitted_at": item.submitted_at.isoformat() if item.submitted_at else None,
+        "reviewed_at": item.reviewed_at.isoformat() if item.reviewed_at else None,
+    }
+
+@approval_router.post("/{approval_id}/approve")
+async def approve_content(approval_id: str, db: Session = Depends(get_db)):
+    """Client approves a creative asset."""
+    from app.core.database import ContentApprovalModel
+    from datetime import datetime
+    item = db.query(ContentApprovalModel).filter(ContentApprovalModel.id == approval_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Approval item not found")
+    item.status = "approved"
+    item.reviewed_at = datetime.utcnow()
+    db.commit()
+    return {"id": approval_id, "status": "approved", "message": "Asset approved. It will be scheduled for publishing."}
+
+@approval_router.post("/{approval_id}/reject")
+async def reject_content(approval_id: str, feedback: str = "", db: Session = Depends(get_db)):
+    """Client rejects a creative asset with feedback."""
+    from app.core.database import ContentApprovalModel
+    from datetime import datetime
+    item = db.query(ContentApprovalModel).filter(ContentApprovalModel.id == approval_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Approval item not found")
+    item.status = "revisions_requested"
+    item.client_feedback = feedback
+    item.reviewed_at = datetime.utcnow()
+    db.commit()
+    return {"id": approval_id, "status": "revisions_requested", "feedback": feedback, "message": "Revisions requested. Agent will update and resubmit."}
+
+@approval_router.post("/{approval_id}/revise")
+async def submit_revision(
+    approval_id: str,
+    media_url: str = None,
+    content_text: str = None,
+    db: Session = Depends(get_db)
+):
+    """Agent submits a revised version."""
+    from app.core.database import ContentApprovalModel
+    from datetime import datetime
+    item = db.query(ContentApprovalModel).filter(ContentApprovalModel.id == approval_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Approval item not found")
+    if media_url:
+        item.media_url = media_url
+    if content_text:
+        item.content_text = content_text
+    item.status = "pending_review"
+    item.revision_count += 1
+    item.reviewed_at = None
+    db.commit()
+    return {"id": approval_id, "status": "pending_review", "revision_count": item.revision_count, "message": "Revision submitted for client review."}
+
+@approval_router.post("/create")
+async def create_approval_item(
+    campaign_id: str,
+    client_id: str,
+    agent_id: str,
+    asset_type: str,
+    title: str,
+    description: str = "",
+    media_url: str = None,
+    content_text: str = None,
+    db: Session = Depends(get_db)
+):
+    """Agent submits a new creative asset for approval."""
+    from app.core.database import ContentApprovalModel
+    from app.core.database import CampaignModel, ClientModel, AgentModel
+    # Validate references
+    campaign = db.query(CampaignModel).filter(CampaignModel.id == campaign_id).first()
+    client = db.query(ClientModel).filter(ClientModel.id == client_id).first()
+    agent = db.query(AgentModel).filter(AgentModel.id == agent_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    item = ContentApprovalModel(
+        campaign_id=campaign_id,
+        client_id=client_id,
+        agent_id=agent_id,
+        asset_type=asset_type,
+        title=title,
+        description=description,
+        media_url=media_url,
+        content_text=content_text,
+        status="pending_review",
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return {"id": item.id, "status": "pending_review", "message": "Asset submitted for client approval."}
+
+
+@approval_router.get("/dashboard/stats")
+async def get_approval_stats(db: Session = Depends(get_db)):
+    """Get approval workflow statistics."""
+    from app.core.database import ContentApprovalModel
+    from sqlalchemy import func
+    total = db.query(ContentApprovalModel).count()
+    pending = db.query(ContentApprovalModel).filter(ContentApprovalModel.status == "pending_review").count()
+    approved = db.query(ContentApprovalModel).filter(ContentApprovalModel.status == "approved").count()
+    revisions = db.query(ContentApprovalModel).filter(ContentApprovalModel.status == "revisions_requested").count()
+    return {
+        "total": total,
+        "pending_review": pending,
+        "approved": approved,
+        "revisions_requested": revisions,
+    }
+
+
 @calendar_router.get("/share/{campaign_id}")
 async def share_calendar(campaign_id: str, format: str = "html", db: Session = Depends(get_db)):
     """Generate a shareable calendar view for clients."""

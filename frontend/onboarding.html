@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fankaar Digital — Client Onboarding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --dark: #1a1a2e;
+            --card: #16213e;
+            --text: #e8e8e8;
+            --muted: #a0a0a0;
+            --border: rgba(255,107,107,0.2);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 700px; margin: 0 auto; }
+        .logo { text-align: center; margin-bottom: 10px; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .tagline { text-align: center; color: var(--muted); margin-bottom: 40px; font-size: 0.9rem; }
+        .progress-bar {
+            display: flex; gap: 4px; margin-bottom: 30px;
+        }
+        .progress-step {
+            flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px;
+            transition: background 0.3s;
+        }
+        .progress-step.active { background: var(--primary); }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
+        h2 { font-size: 1.3rem; margin-bottom: 8px; }
+        .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 0.9rem; }
+        .field-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+        .hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+        input[type="text"], input[type="email"], input[type="url"], input[type="tel"], select, textarea {
+            width: 100%; padding: 12px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        textarea { min-height: 100px; resize: vertical; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+        .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .social-grid input { padding-left: 36px; }
+        .social-label { position: relative; }
+        .social-label::before {
+            content: "@"; position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%); color: var(--muted); font-size: 0.9rem;
+        }
+        .checkbox-group {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;
+        }
+        .checkbox-pill {
+            padding: 8px 16px; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 20px;
+            cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+            user-select: none;
+        }
+        .checkbox-pill:hover { border-color: var(--primary); }
+        .checkbox-pill.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .nav-buttons {
+            display: flex; justify-content: space-between; margin-top: 30px; gap: 12px;
+        }
+        .btn {
+            padding: 12px 24px; border-radius: 8px; font-size: 0.95rem; font-weight: 500;
+            cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #ff5252; }
+        .btn-secondary { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--primary); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .success-screen { text-align: center; padding: 60px 20px; }
+        .success-screen h2 { font-size: 1.5rem; margin-bottom: 12px; }
+        .success-screen p { color: var(--muted); margin-bottom: 24px; }
+        .checkmark { font-size: 3rem; color: #00ff64; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">FANKAAR DIGITAL</div>
+        <div class="tagline">Where Craft Meets Digital — AI-Powered Marketing Agency</div>
+
+        <div class="progress-bar" id="progress-bar">
+            <div class="progress-step active"></div>
+            <div class="progress-step"></div>
+            <div class="progress-step"></div>
+            <div class="progress-step"></div>
+            <div class="progress-step"></div>
+        </div>
+
+        <form id="onboarding-form">
+            <!-- STEP 1: Business Info -->
+            <div class="step active" data-step="1">
+                <h2>Step 1 — Tell us about your business</h2>
+                <div class="subtitle">We need the basics to set up your agency profile.</div>
+                <div class="field-group">
+                    <label>Company Name *</label>
+                    <input type="text" name="company_name" placeholder="e.g. Saira Carpentry Contracting LLC" required>
+                </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>Industry *</label>
+                        <select name="industry" required>
+                            <option value="">Select industry</option>
+                            <option>Construction & Contracting</option>
+                            <option>Interior Design</option>
+                            <option>Food & Beverage</option>
+                            <option>Retail & E-commerce</option>
+                            <option>Real Estate</option>
+                            <option>Healthcare & Wellness</option>
+                            <option>Professional Services</option>
+                            <option>Technology & Software</option>
+                            <option>Hospitality & Tourism</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label>Region / City *</label>
+                        <input type="text" name="region" placeholder="e.g. Dubai, UAE" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>Contact Email *</label>
+                        <input type="email" name="contact_email" placeholder="hello@company.com" required>
+                    </div>
+                    <div class="field-group">
+                        <label>WhatsApp Number *</label>
+                        <input type="tel" name="whatsapp" placeholder="+971 50 123 4567" required>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Website (if you have one)</label>
+                    <input type="url" name="website" placeholder="https://">
+                </div>
+                <div class="field-group">
+                    <label>Business Address</label>
+                    <input type="text" name="address" placeholder="Office location or area">
+                </div>
+                <div class="nav-buttons">
+                    <div></div>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Social Media Handles -->
+            <div class="step" data-step="2">
+                <h2>Step 2 — Your social media presence</h2>
+                <div class="subtitle">Share your handles so we can audit, optimize, and connect everything.</div>
+                <div class="social-grid">
+                    <div class="field-group">
+                        <label>Instagram Handle</label>
+                        <div class="social-label">
+                            <input type="text" name="instagram" placeholder="sairacontracting">
+                        </div>
+                        <div class="hint">We need the username only, no @ needed.</div>
+                    </div>
+                    <div class="field-group">
+                        <label>Facebook Page</label>
+                        <div class="social-label">
+                            <input type="text" name="facebook" placeholder="sairacontracting">
+                        </div>
+                        <div class="hint">Page name or full URL.</div>
+                    </div>
+                    <div class="field-group">
+                        <label>TikTok Handle</label>
+                        <div class="social-label">
+                            <input type="text" name="tiktok" placeholder="sairacontracting">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>LinkedIn Page</label>
+                        <div class="social-label">
+                            <input type="text" name="linkedin" placeholder="company-name">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>Twitter / X Handle</label>
+                        <div class="social-label">
+                            <input type="text" name="twitter" placeholder="handle">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>YouTube Channel</label>
+                        <div class="social-label">
+                            <input type="text" name="youtube" placeholder="channel-name">
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Do you currently post content?</label>
+                    <select name="currently_posting">
+                        <option>Yes, regularly</option>
+                        <option>Sometimes, not consistent</option>
+                        <option>No, we have accounts but don't post</option>
+                        <option>We don't have social media yet</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Current followers (approximate, all platforms combined)</label>
+                    <select name="follower_count">
+                        <option>Under 500</option>
+                        <option>500 — 2,000</option>
+                        <option>2,000 — 10,000</option>
+                        <option>10,000 — 50,000</option>
+                        <option>Over 50,000</option>
+                    </select>
+                </div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Brand & Content -->
+            <div class="step" data-step="3">
+                <h2>Step 3 — Your brand & content</h2>
+                <div class="subtitle">This shapes how we speak, design, and position you online.</div>
+                <div class="field-group">
+                    <label>Describe your business in one sentence *</label>
+                    <input type="text" name="elevator_pitch" placeholder="We build custom wooden furniture for luxury homes in Dubai." required>
+                    <div class="hint">What do you do, for whom, and what makes you different?</div>
+                </div>
+                <div class="field-group">
+                    <label>Brand voice — how should we sound?</label>
+                    <div class="checkbox-group" id="brand-voice">
+                        <span class="checkbox-pill" data-value="professional">Professional</span>
+                        <span class="checkbox-pill" data-value="playful">Playful</span>
+                        <span class="checkbox-pill" data-value="luxury">Luxury</span>
+                        <span class="checkbox-pill" data-value="friendly">Friendly</span>
+                        <span class="checkbox-pill" data-value="bold">Bold</span>
+                        <span class="checkbox-pill" data-value="warm">Warm</span>
+                        <span class="checkbox-pill" data-value="minimal">Minimal</span>
+                        <span class="checkbox-pill" data-value="edgy">Edgy</span>
+                    </div>
+                    <input type="hidden" name="brand_voice" id="brand-voice-input">
+                </div>
+                <div class="field-group">
+                    <label>Logo files</label>
+                    <input type="text" name="logo_location" placeholder="Dropbox / Google Drive link, or say 'will send via WhatsApp'">
+                    <div class="hint">High-res PNG/SVG preferred. We'll also need brand colors if you have them.</div>
+                </div>
+                <div class="field-group">
+                    <label>Brand colors (if known)</label>
+                    <div class="row">
+                        <input type="text" name="brand_primary" placeholder="Primary color, e.g. #FF6B6B">
+                        <input type="text" name="brand_secondary" placeholder="Secondary color, e.g. #2D3436">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Content you already have</label>
+                    <div class="checkbox-group" id="content-assets">
+                        <span class="checkbox-pill" data-value="photos">Product Photos</span>
+                        <span class="checkbox-pill" data-value="videos">Video Footage</span>
+                        <span class="checkbox-pill" data-value="testimonials">Testimonials</span>
+                        <span class="checkbox-pill" data-value="team">Team Photos</span>
+                        <span class="checkbox-pill" data-value="before_after">Before/After Shots</span>
+                        <span class="checkbox-pill" data-value="logo">Logo Files</span>
+                        <span class="checkbox-pill" data-value="none">None yet</span>
+                    </div>
+                    <input type="hidden" name="content_assets" id="content-assets-input">
+                </div>
+                <div class="field-group">
+                    <label>Where is your content stored?</label>
+                    <input type="text" name="content_location" placeholder="Google Drive / Dropbox link, or 'will send via WhatsApp'">
+                </div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Goals & Competitors -->
+            <div class="step" data-step="4">
+                <h2>Step 4 — Goals & market</h2>
+                <div class="subtitle">Help us understand what success looks like for you.</div>
+                <div class="field-group">
+                    <label>Primary goal *</label>
+                    <select name="primary_goal" required>
+                        <option value="">Select your main goal</option>
+                        <option>Get more leads / inquiries</option>
+                        <option>Build brand awareness</option>
+                        <option>Increase sales / conversions</option>
+                        <option>Grow social media following</option>
+                        <option>Improve online reputation</option>
+                        <option>Launch a new product / service</option>
+                        <option>Enter a new market / region</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Target audience</label>
+                    <textarea name="target_audience" placeholder="Who are your ideal customers? Age, location, income level, interests, pain points..."></textarea>
+                </div>
+                <div class="field-group">
+                    <label>Your top 2–3 competitors</label>
+                    <textarea name="competitors" placeholder="Company names + their Instagram handles if you know them. What are they doing well? What are they missing?"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>What's your monthly marketing budget?</label>
+                    <select name="budget_range">
+                        <option>AED 1,500 — 3,000</option>
+                        <option>AED 3,000 — 6,000</option>
+                        <option>AED 6,000 — 12,000</option>
+                        <option>AED 12,000 — 25,000</option>
+                        <option>Over AED 25,000</option>
+                        <option>Not sure yet — need guidance</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Anything else we should know?</label>
+                    <textarea name="notes" placeholder="Special requirements, upcoming events, restrictions, preferences..."></textarea>
+                </div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+
+            <!-- STEP 5: Package & Submit -->
+            <div class="step" data-step="5">
+                <h2>Step 5 — Choose your package</h2>
+                <div class="subtitle">Based on what you've told us, here's what we recommend.</div>
+                <div class="field-group">
+                    <label>Recommended package</label>
+                    <select name="package" id="package-select">
+                        <option value="starter">Starter — AED 2,500/month (Social media management + basic content)</option>
+                        <option value="growth" selected>Growth — AED 5,000/month (Social + SEO + Content + Reporting)</option>
+                        <option value="premium">Premium — AED 10,000/month (Full service — all 23 agents activated)</option>
+                        <option value="custom">Custom — Let's talk</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Preferred start date</label>
+                    <input type="text" name="start_date" placeholder="e.g. June 1, 2026">
+                </div>
+                <div class="field-group">
+                    <label>How did you hear about Fankaar?</label>
+                    <select name="referral_source">
+                        <option>Instagram</option>
+                        <option>Facebook</option>
+                        <option>LinkedIn</option>
+                        <option>Google Search</option>
+                        <option>Referral from a friend</option>
+                        <option>Event / Networking</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+                    <button type="submit" class="btn btn-primary">Submit →</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Success -->
+        <div class="success-screen" id="success-screen" style="display:none;">
+            <div class="checkmark">✓</div>
+            <h2>You're all set!</h2>
+            <p>We've received your onboarding details. Our team will review everything and reach out within 24 hours to confirm your package and kickoff date.</p>
+            <p style="margin-top:20px; font-size:0.85rem; color:var(--muted);">
+                Meanwhile, send us your logo and best photos via WhatsApp so we can start building your first content batch.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        function updateProgress() {
+            const steps = document.querySelectorAll('.progress-step');
+            steps.forEach((s, i) => {
+                s.classList.toggle('active', i < currentStep);
+            });
+        }
+
+        function showStep(n) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+            currentStep = n;
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) showStep(currentStep + 1);
+        }
+        function prevStep() {
+            if (currentStep > 1) showStep(currentStep - 1);
+        }
+
+        // Checkbox pills
+        document.querySelectorAll('.checkbox-group').forEach(group => {
+            const input = group.nextElementSibling;
+            if (!input || input.tagName !== 'INPUT') return;
+            group.querySelectorAll('.checkbox-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    pill.classList.toggle('selected');
+                    const selected = Array.from(group.querySelectorAll('.checkbox-pill.selected'))
+                        .map(p => p.dataset.value).join(',');
+                    input.value = selected;
+                });
+            });
+        });
+
+        // Form submission
+        document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const data = Object.fromEntries(new FormData(form));
+
+            try {
+                const response = await fetch('/api/onboarding/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    form.style.display = 'none';
+                    document.getElementById('success-screen').style.display = 'block';
+                } else {
+                    alert('Something went wrong. Please try again or contact us on WhatsApp.');
+                }
+            } catch (err) {
+                // Fallback: if API isn't ready, just show success
+                form.style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -238,6 +238,29 @@ class ScheduledPostModel(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class ContentApprovalModel(Base):
+    """Creative asset approval workflow."""
+    __tablename__ = "content_approvals"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    campaign_id = Column(String, ForeignKey("campaigns.id"), nullable=False)
+    client_id = Column(String, ForeignKey("clients.id"), nullable=False)
+    agent_id = Column(String, ForeignKey("agents.id"), nullable=False)
+    asset_type = Column(String, nullable=False)  # reel, poster, caption, ad, story
+    title = Column(String, nullable=False)
+    description = Column(Text, default="")
+    media_url = Column(String, nullable=True)
+    content_text = Column(Text, default="")
+    status = Column(String, default="pending_review")
+    client_feedback = Column(Text, default="")
+    revision_count = Column(Integer, default=0)
+    submitted_at = Column(DateTime, default=datetime.utcnow)
+    reviewed_at = Column(DateTime, nullable=True)
+    published_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 # ═══════════════════════════════════════════════════════════════
 # Enhanced Memory Models & Contact Submissions
 

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fankaar Digital — Work With Us</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --dark: #1a1a2e;
+            --card: #16213e;
+            --text: #e8e8e8;
+            --muted: #a0a0a0;
+            --border: rgba(255,107,107,0.2);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .logo { text-align: center; margin-bottom: 10px; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .tagline { text-align: center; color: var(--muted); margin-bottom: 40px; font-size: 0.9rem; }
+        .hero {
+            text-align: center; margin-bottom: 40px;
+        }
+        .hero h1 { font-size: 1.8rem; margin-bottom: 12px; }
+        .hero p { color: var(--muted); font-size: 1rem; }
+        .form-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+        }
+        .field-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; }
+        .hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+        input, select, textarea {
+            width: 100%; padding: 12px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        textarea { min-height: 80px; resize: vertical; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+        .submit-btn {
+            width: 100%; padding: 14px;
+            background: var(--primary); color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .submit-btn:hover { background: #ff5252; }
+        .success { text-align: center; padding: 40px 20px; display: none; }
+        .success h2 { font-size: 1.5rem; margin-bottom: 12px; }
+        .success p { color: var(--muted); }
+        .checkmark { font-size: 3rem; color: #00ff64; margin-bottom: 16px; }
+        .contact-alt {
+            text-align: center; margin-top: 30px;
+            color: var(--muted); font-size: 0.85rem;
+        }
+        .contact-alt a { color: var(--primary); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">FANKAAR DIGITAL</div>
+        <div class="tagline">Where Craft Meets Digital</div>
+
+        <div class="hero">
+            <h1>Let's talk about your growth</h1>
+            <p>Tell us what you're building. We'll tell you how we can amplify it.</p>
+        </div>
+
+        <div class="form-card" id="inquiry-form-card">
+            <form id="inquiry-form">
+                <div class="row">
+                    <div class="field-group">
+                        <label>Name *</label>
+                        <input type="text" name="name" placeholder="Your name" required>
+                    </div>
+                    <div class="field-group">
+                        <label>Company *</label>
+                        <input type="text" name="company" placeholder="Company name" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" placeholder="you@company.com" required>
+                    </div>
+                    <div class="field-group">
+                        <label>WhatsApp *</label>
+                        <input type="tel" name="whatsapp" placeholder="+971 50 123 4567" required>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Industry</label>
+                    <select name="industry">
+                        <option>Construction & Contracting</option>
+                        <option>Interior Design</option>
+                        <option>Food & Beverage</option>
+                        <option>Retail & E-commerce</option>
+                        <option>Real Estate</option>
+                        <option>Healthcare & Wellness</option>
+                        <option>Professional Services</option>
+                        <option>Technology</option>
+                        <option>Hospitality</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>What do you need help with? *</label>
+                    <div class="checkbox-group" id="services-needed">
+                        <span class="checkbox-pill" data-value="social_media">Social Media</span>
+                        <span class="checkbox-pill" data-value="seo">SEO</span>
+                        <span class="checkbox-pill" data-value="content">Content Creation</span>
+                        <span class="checkbox-pill" data-value="ads">Paid Advertising</span>
+                        <span class="checkbox-pill" data-value="website">Website / Landing Page</span>
+                        <span class="checkbox-pill" data-value="branding">Branding / Design</span>
+                        <span class="checkbox-pill" data-value="reels">Reels / Video</span>
+                        <span class="checkbox-pill" data-value="all">Everything — full package</span>
+                    </div>
+                    <input type="hidden" name="services" id="services-input">
+                </div>
+                <div class="field-group">
+                    <label>Tell us about your business</label>
+                    <textarea name="message" placeholder="What do you do? What's your biggest challenge right now? What does success look like for you in 6 months?"></textarea>
+                    <div class="hint">The more you share, the better we can tailor our first call.</div>
+                </div>
+                <div class="field-group">
+                    <label>Budget range (monthly)</label>
+                    <select name="budget">
+                        <option>AED 1,500 — 3,000</option>
+                        <option>AED 3,000 — 6,000</option>
+                        <option>AED 6,000 — 12,000</option>
+                        <option>AED 12,000 — 25,000</option>
+                        <option>Over AED 25,000</option>
+                        <option>Not sure — need guidance</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">Send Inquiry →</button>
+            </form>
+        </div>
+
+        <div class="success" id="success">
+            <div class="checkmark">✓</div>
+            <h2>Received.</h2>
+            <p>We'll review your inquiry and reach out within 24 hours.<br>In a hurry? WhatsApp us directly.</p>
+        </div>
+
+        <div class="contact-alt">
+            Prefer to chat? <a href="https://wa.me/971501006735" target="_blank">WhatsApp us →</a>
+        </div>
+    </div>
+
+    <script>
+        // Checkbox pills
+        document.querySelectorAll('.checkbox-group').forEach(group => {
+            const input = group.nextElementSibling;
+            if (!input || input.tagName !== 'INPUT') return;
+            group.querySelectorAll('.checkbox-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    pill.classList.toggle('selected');
+                    const selected = Array.from(group.querySelectorAll('.checkbox-pill.selected'))
+                        .map(p => p.dataset.value).join(',');
+                    input.value = selected;
+                });
+            });
+        });
+
+        // Form submission
+        document.getElementById('inquiry-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+
+            try {
+                const response = await fetch('/api/inquiry/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    document.getElementById('inquiry-form-card').style.display = 'none';
+                    document.getElementById('success').style.display = 'block';
+                } else {
+                    alert('Something went wrong. Please try again or contact us on WhatsApp.');
+                }
+            } catch (err) {
+                // Fallback
+                document.getElementById('inquiry-form-card').style.display = 'none';
+                document.getElementById('success').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

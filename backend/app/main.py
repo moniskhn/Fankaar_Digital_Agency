@@ -152,6 +152,7 @@ async def api_diagnose():
         "onboarding": ("app.api.router", "onboarding_router"),
         "services": ("app.api.router", "services_router"),
         "public": ("app.api.router", "public_router"),
+        "approvals": ("app.api.router", "approval_router"),
     }
     results = {}
     for name, (mod_path, attr) in router_map.items():
@@ -204,6 +205,7 @@ def load_routers():
         "onboarding": ("app.api.router", "onboarding_router", "/api/onboarding"),
         "services": ("app.api.router", "services_router", "/api/services"),
         "public": ("app.api.router", "public_router", "/api/public"),
+        "approvals": ("app.api.router", "approval_router", "/api/approvals"),
     }
     loaded = 0
     for name, (mod_path, attr, prefix) in router_map.items():
