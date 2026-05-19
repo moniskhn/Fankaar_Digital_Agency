@@ -25,16 +25,24 @@ class WhatsAppService:
     @property
     def is_configured(self) -> bool:
         """Check if Twilio credentials are properly configured."""
-        # Account SID must start with 'AC'
-        is_sid_valid = self.account_sid and self.account_sid.startswith("AC")
-        if self.account_sid and not is_sid_valid:
-            print(f"[WhatsApp Warning] Invalid Twilio Account SID format: {self.account_sid}. Must start with 'AC'.")
+        if not all([self.account_sid, self.auth_token, self.from_number]):
+            return False
+        if not self.account_sid.startswith("AC"):
+            return False
+        return True
 
-        return all([
-            is_sid_valid,
-            self.auth_token,
-            self.from_number,
-        ])
+    def _validate_credentials(self) -> None:
+        if not self.account_sid:
+            raise ValueError("Twilio Account SID not configured")
+        if not self.auth_token:
+            raise ValueError("Twilio Auth Token not configured")
+        if not self.from_number:
+            raise ValueError("Twilio WhatsApp number not configured")
+        if not self.account_sid.startswith("AC"):
+            raise ValueError(
+                f"Invalid Twilio Account SID: '{self.account_sid[:10]}...'. "
+                "Must start with 'AC'. Get the correct one from https://console.twilio.com/"
+            )
 
     async def send_message(self, to_number: str, body: str) -> bool:
         """
@@ -47,10 +55,17 @@ class WhatsAppService:
         Returns:
             True if sent successfully
         """
-        if not self.is_configured:
-            # Log the message for development instead
-            print(f"[WhatsApp DEV] To: {to_number}\n{body[:200]}...")
-            return True
+        try:
+            self._validate_credentials()
+        except ValueError as e:
+            # If any credential is set but invalid, it's an error (return False)
+            # If all credentials are EMPTY, we treat it as DEV mode (return True)
+            if not any([self.account_sid, self.auth_token, self.from_number]):
+                print(f"[WhatsApp DEV] To: {to_number}\n{body[:200]}...")
+                return True
+
+            print(f"[WhatsApp Error] {e}")
+            return False
 
         if not to_number.startswith("whatsapp:"):
             to_number = f"whatsapp:{to_number}"

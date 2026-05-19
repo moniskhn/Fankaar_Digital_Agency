@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # ── LLM Configuration ──────────────────────────────────────────
-    llm_provider: str = Field(default="ollama", description="LLM provider: ollama, anthropic, or openai")
+    llm_provider: str = Field(default="moonshot", description="LLM provider: ollama, anthropic, openai, or moonshot")
     ollama_host: str = Field(default="host.docker.internal:11434", description="Ollama server host:port")
     ollama_model: str = Field(default="llama3.2", description="Default Ollama model name")
     anthropic_api_key: str = Field(default="", description="Anthropic API key")
