@@ -64,22 +64,42 @@ class LLMClient:
         max_tok = max_tokens if max_tokens is not None else settings.llm_max_tokens
 
         last_error = None
+        attempted_providers = []
         for provider in self.fallback_chain:
             try:
                 if provider == "ollama":
+                    # Ollama is local, usually doesn't have an API key check here
+                    attempted_providers.append(provider)
                     return await self._call_ollama(prompt, system, temp, max_tok, structured_output)
                 elif provider == "anthropic":
+                    if not settings.anthropic_api_key:
+                        continue
+                    attempted_providers.append(provider)
                     return await self._call_anthropic(prompt, system, temp, max_tok, structured_output)
                 elif provider == "openai":
+                    if not settings.openai_api_key:
+                        continue
+                    attempted_providers.append(provider)
                     return await self._call_openai(prompt, system, temp, max_tok, structured_output)
                 elif provider == "moonshot":
+                    if not settings.moonshot_api_key:
+                        continue
+                    attempted_providers.append(provider)
                     return await self._call_moonshot(prompt, system, temp, max_tok, structured_output)
             except Exception as e:
                 last_error = e
                 continue
 
         # All providers failed
-        error_msg = f"All LLM providers failed. Last error: {last_error}"
+        if not attempted_providers:
+            missing_vars = []
+            if not settings.moonshot_api_key: missing_vars.append("MOONSHOT_API_KEY")
+            if not settings.anthropic_api_key: missing_vars.append("ANTHROPIC_API_KEY")
+            if not settings.openai_api_key: missing_vars.append("OPENAI_API_KEY")
+
+            error_msg = f"No LLM providers are configured. Missing variables: {', '.join(missing_vars)}. Please check your .env file."
+        else:
+            error_msg = f"All attempted LLM providers ({', '.join(attempted_providers)}) failed. Last error: {last_error}"
         return LLMResponse(
             text=f"Error: {error_msg}. Please check your LLM configuration.",
             provider="none",

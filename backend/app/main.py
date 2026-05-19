@@ -77,14 +77,16 @@ async def root():
         "frontend/index.html",
         "/app/frontend/index.html",
         "../frontend/index.html",
+        os.path.join(os.path.dirname(__file__), "../../frontend/index.html"),
     ]
     for p in paths:
         if os.path.exists(p):
+            logger.info(f"Serving root from {p}")
             return FileResponse(p)
 
     return {
         "name": getattr(settings, 'agency_name', 'Fankaar Digital'),
-        "version": "1.0.0",
+        "version": "1.1.0",
         "health": "/health",
         "docs": "/docs",
         "api": "/api",

@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fankaar Digital — Jarvis Command</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="jarvis-container">
         <header>
-            <h1>CLAUDE MYTHOS</h1>
+            <h1>FANKAAR DIGITAL</h1>
             <div class="system-status">
                 <span class="status-dot online"></span>
                 <span class="status-text">SYSTEM ONLINE</span>
@@ -33,21 +33,40 @@
             </div>
 
             <div class="controls">
-                <button id="mic-btn" class="mic-inactive">
-                    <span class="mic-icon">🎙️</span>
-                </button>
-                <p class="instruction">Tap to speak with Jon Snow</p>
+                <div class="voice-controls">
+                    <button id="mic-btn" class="mic-inactive">
+                        <span class="mic-icon">🎙️</span>
+                    </button>
+                    <p class="instruction">Tap to speak with Jon Snow</p>
+                </div>
+
+                <div class="text-controls">
+                    <input type="text" id="text-input" placeholder="Type a message to Jon...">
+                    <button id="send-btn">SEND</button>
+                </div>
+
+                <div class="action-controls">
+                    <button id="report-btn">LATEST REPORT</button>
+                </div>
             </div>
         </main>
+
+        <div id="report-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <div id="report-content"></div>
+            </div>
+        </div>
 
         <footer>
             <div class="stats-bar">
                 <div class="stat">CPU: <span id="cpu-load">4.2%</span></div>
                 <div class="stat">AGENTS: <span id="agent-count">23</span></div>
                 <div class="stat">REGION: <span id="current-region">DUBAI</span></div>
+                <div class="stat">VERSION: <span>1.1</span></div>
             </div>
         </footer>
     </div>
-    <script src="app.js"></script>
+    <script src="app.js?v=1.1"></script>
 </body>
 </html>
