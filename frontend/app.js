@@ -55,7 +55,50 @@ tabBtns.forEach(btn => {
     });
 });
 
-// ── Chat ───────────────────────────────────────────────────
+// ── Voice Output (TTS) — Jarvis Mode ─────────────────────
+let voiceEnabled = true;
+let jarvisVoice = null;
+
+function initVoice() {
+    if (!window.speechSynthesis) return;
+    const voices = window.speechSynthesis.getVoices();
+    // Prefer a deep male voice for Jarvis feel
+    jarvisVoice = voices.find(v => v.name.toLowerCase().includes('male') && v.lang.startsWith('en'))
+        || voices.find(v => v.name.toLowerCase().includes('daniel') || v.name.toLowerCase().includes('tom'))
+        || voices.find(v => v.lang === 'en-US' || v.lang === 'en-GB')
+        || voices[0];
+}
+
+if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = initVoice;
+    initVoice();
+}
+
+function speak(text) {
+    if (!voiceEnabled || !window.speechSynthesis) return;
+    // Strip emojis and markdown for cleaner speech
+    const clean = text.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').replace(/[📊⚡👤🎨📅💬✅🔥⏱️🎙️›]/g, '').trim();
+    if (!clean) return;
+
+    window.speechSynthesis.cancel(); // stop any previous speech
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.voice = jarvisVoice;
+    utter.pitch = 0.85;   // deeper
+    utter.rate = 1.05;    // slightly faster, more crisp
+    utter.volume = 1.0;
+    window.speechSynthesis.speak(utter);
+}
+
+const voiceToggle = document.getElementById('voice-toggle');
+if (voiceToggle) {
+    voiceToggle.addEventListener('click', () => {
+        voiceEnabled = !voiceEnabled;
+        voiceToggle.textContent = voiceEnabled ? '🔊' : '🔇';
+        voiceToggle.style.opacity = voiceEnabled ? '1' : '0.4';
+        if (!voiceEnabled) window.speechSynthesis.cancel();
+    });
+}
+
 function addMessage(text, sender) {
     const div = document.createElement('div');
     div.className = `message ${sender}`;
@@ -78,13 +121,18 @@ async function sendMessage(text) {
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        addMessage(data.response || 'Jon received your message.', 'jarvis');
+        const reply = data.response || 'Jon received your message.';
+        addMessage(reply, 'jarvis');
+        speak(reply); // 🔊 Jarvis speaks
     } catch (err) {
+        let msg;
         if (err.name === 'AbortError') {
-            addMessage("⏱️ Jon took too long to respond. He's busy — try again shortly.", 'system');
+            msg = "⏱️ Jon took too long to respond. He's busy — try again shortly.";
         } else {
-            addMessage("Connection error. API may be restarting. Try again.", 'system');
+            msg = "Connection error. API may be restarting. Try again.";
         }
+        addMessage(msg, 'system');
+        speak(msg);
     }
 }
 
