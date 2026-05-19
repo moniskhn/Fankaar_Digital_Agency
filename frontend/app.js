@@ -1,9 +1,30 @@
 /**
- * Fankaar Digital — Jarvis Command Interface v2
- * Chat (text + voice), Daily Reports, Agent Dashboard
+ * Fankaar Digital — Jarvis Command Interface v3
+ * Cache-bust: 2026-05-19-2350
  */
 
 const API_BASE = '';
+const FETCH_TIMEOUT = 5000; // 5 seconds max — no hanging
+
+// ── Helpers ────────────────────────────────────────────────
+async function fetchWithTimeout(url, options = {}) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(id);
+        return response;
+    } catch (err) {
+        clearTimeout(id);
+        throw err;
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // ── DOM Elements ───────────────────────────────────────────
 const tabBtns = document.querySelectorAll('.tab-btn');
@@ -41,27 +62,26 @@ function addMessage(text, sender) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 async function sendMessage(text) {
     if (!text.trim()) return;
     addMessage(text, 'user');
     textInput.value = '';
 
     try {
-        const response = await fetch(`${API_BASE}/api/ceo/message`, {
+        const response = await fetchWithTimeout(`${API_BASE}/api/ceo/message`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text })
         });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        addMessage(data.response || 'No response from Jon.', 'jarvis');
+        addMessage(data.response || 'Jon received your message.', 'jarvis');
     } catch (err) {
-        addMessage("Connection error. Please try again.", 'system');
+        if (err.name === 'AbortError') {
+            addMessage("⏱️ Jon took too long to respond. He's busy — try again shortly.", 'system');
+        } else {
+            addMessage("Connection error. API may be restarting. Try again.", 'system');
+        }
     }
 }
 
@@ -120,17 +140,21 @@ async function loadDailyReport() {
     reportDate.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     try {
-        const response = await fetch(`${API_BASE}/api/ceo/daily-report`, { method: 'GET' });
-        if (!response.ok) throw new Error('Report not available');
+        const response = await fetchWithTimeout(`${API_BASE}/api/ceo/daily-report`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         reportCache = data;
         renderReport(data);
     } catch (err) {
+        let msg = "Jon is compiling the report. Try again in a moment.";
+        if (err.name === 'AbortError') {
+            msg = "⏱️ Report generation timed out. The AI backend is warming up — click Refresh to try again.";
+        }
         reportContent.innerHTML = `
             <div class="report-section">
                 <h3>⚠️ Report Unavailable</h3>
-                <p>Jon is compiling the report. Try again in a moment.</p>
-                <p style="margin-top:10px; font-size:0.8rem; opacity:0.5;">${escapeHtml(err.message)}</p>
+                <p>${msg}</p>
+                <p style="margin-top:10px; font-size:0.8rem; opacity:0.5;">${escapeHtml(err.message || '')}</p>
             </div>`;
     }
 }
@@ -194,13 +218,15 @@ async function loadAgents() {
     agentGrid.innerHTML = '<div class="loading">Loading agent roster...</div>';
 
     try {
-        const response = await fetch(`${API_BASE}/api/agents`);
-        if (!response.ok) throw new Error('Agents not available');
+        const response = await fetchWithTimeout(`${API_BASE}/api/agents`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         agentsCache = data;
         renderAgents(data);
     } catch (err) {
-        agentGrid.innerHTML = `<div class="loading">Error loading agents: ${escapeHtml(err.message)}</div>`;
+        let msg = "Error loading agents.";
+        if (err.name === 'AbortError') msg = "⏱️ Agent roster timed out. The backend is warming up — click the Agents tab again to retry.";
+        agentGrid.innerHTML = `<div class="loading">${msg}</div>`;
     }
 }
 
@@ -230,5 +256,5 @@ setInterval(() => {
 }, 3000);
 
 // ── Init ───────────────────────────────────────────────────
-loadDailyReport();
-loadAgents();
+// Don't auto-load report/agents — only load when tab is clicked
+// This prevents the page from hanging on startup
