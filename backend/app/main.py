@@ -70,6 +70,22 @@ async def health_check():
         "llm_provider": getattr(settings, 'llm_provider', 'moonshot'),
     }
 
+@app.get("/api/test")
+async def api_test():
+    """Always works — used to verify API routing."""
+    return {"api": "works", "time": datetime.utcnow().isoformat()}
+
+@app.get("/api/debug")
+async def api_debug():
+    """Debug endpoint — shows startup state."""
+    routes = [str(r.path) for r in app.routes if hasattr(r, 'path')]
+    return {
+        "routes_loaded": len(routes),
+        "routes": routes[:20],
+        "settings_provider": getattr(settings, 'llm_provider', 'unknown'),
+        "settings_has_moonshot_key": bool(getattr(settings, 'moonshot_api_key', '')),
+    }
+
 @app.get("/")
 async def root():
     # In Docker, frontend is at /app/frontend/
