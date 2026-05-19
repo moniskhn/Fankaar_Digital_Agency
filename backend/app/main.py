@@ -29,9 +29,29 @@ class SafeSettings:
 try:
     from app.core.config import settings
     logger.info("Settings loaded from config.py")
+    # Diagnostic: report moonshot_api_key presence without leaking the value
+    _mk = getattr(settings, "moonshot_api_key", "")
+    if _mk:
+        _masked = _mk[:6] + "..." + _mk[-4:] if len(_mk) > 10 else "***"
+        logger.info("Config check — moonshot_api_key: SET (masked: %s)", _masked)
+    else:
+        logger.warning("Config check — moonshot_api_key: EMPTY (not set in environment)")
+    logger.info(
+        "Config check — llm_provider=%s, moonshot_model=%s, moonshot_base_url=%s",
+        getattr(settings, "llm_provider", "unknown"),
+        getattr(settings, "moonshot_model", "unknown"),
+        getattr(settings, "moonshot_base_url", "unknown"),
+    )
 except Exception as e:
-    logger.warning(f"Using safe settings: {e}")
+    logger.error("Failed to load settings from config.py: [%s] %s", type(e).__name__, e, exc_info=True)
+    logger.warning("Falling back to SafeSettings")
     settings = SafeSettings()
+    _mk = settings.moonshot_api_key
+    if _mk:
+        _masked = _mk[:6] + "..." + _mk[-4:] if len(_mk) > 10 else "***"
+        logger.info("SafeSettings check — moonshot_api_key: SET (masked: %s)", _masked)
+    else:
+        logger.warning("SafeSettings check — moonshot_api_key: EMPTY (MOONSHOT_API_KEY env var not set)")
 
 # ── Create App ─────────────────────────────────────────────────
 app = FastAPI(
