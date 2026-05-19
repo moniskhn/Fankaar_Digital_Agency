@@ -63,12 +63,14 @@ class LLMClient:
         temp = temperature if temperature is not None else settings.llm_temperature
         max_tok = max_tokens if max_tokens is not None else settings.llm_max_tokens
 
-        last_error = None
+        errors = {}
         attempted_providers = []
         for provider in self.fallback_chain:
             try:
                 if provider == "ollama":
-                    # Ollama is local, usually doesn't have an API key check here
+                    # Only try Ollama if it's the primary provider or if in development
+                    if settings.llm_provider != "ollama" and settings.app_env != "development":
+                        continue
                     attempted_providers.append(provider)
                     return await self._call_ollama(prompt, system, temp, max_tok, structured_output)
                 elif provider == "anthropic":
@@ -87,7 +89,8 @@ class LLMClient:
                     attempted_providers.append(provider)
                     return await self._call_moonshot(prompt, system, temp, max_tok, structured_output)
             except Exception as e:
-                last_error = e
+                error_detail = f"{type(e).__name__}: {str(e)}"
+                errors[provider] = error_detail
                 continue
 
         # All providers failed
@@ -99,7 +102,8 @@ class LLMClient:
 
             error_msg = f"No LLM providers are configured. Missing variables: {', '.join(missing_vars)}. Please check your .env file."
         else:
-            error_msg = f"All attempted LLM providers ({', '.join(attempted_providers)}) failed. Last error: {last_error}"
+            error_details = "; ".join([f"{p}: {err}" for p, err in errors.items()])
+            error_msg = f"All attempted LLM providers ({', '.join(attempted_providers)}) failed. Details: {error_details}"
         return LLMResponse(
             text=f"Error: {error_msg}. Please check your LLM configuration.",
             provider="none",

@@ -28,7 +28,9 @@ class SafeSettings:
 
 try:
     from app.core.config import settings
-    logger.info("Settings loaded from config.py")
+    logger.info(f"Settings loaded from config.py (Env: {settings.app_env}, Provider: {settings.llm_provider})")
+    if not settings.moonshot_api_key:
+        logger.warning("MOONSHOT_API_KEY is not set in environment")
 except Exception as e:
     logger.warning(f"Using safe settings: {e}")
     settings = SafeSettings()
