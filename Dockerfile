@@ -5,6 +5,10 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends gcc libsqlite3-dev && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements from repo root (NOT backend/)
+# Cache-bust: force rebuild on every push
+ARG BUILD_TIMESTAMP=2026-05-19-2209
+RUN echo "Build: ${BUILD_TIMESTAMP}" > /app/.buildstamp
+
 COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
