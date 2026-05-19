@@ -5,40 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fankaar Digital — Jarvis Command</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="jarvis-container">
         <header>
-            <h1>CLAUDE MYTHOS</h1>
+            <h1>FANKAAR DIGITAL</h1>
             <div class="system-status">
-                <span class="status-dot online"></span>
-                <span class="status-text">SYSTEM ONLINE</span>
+                <span class="status-dot online" id="system-dot"></span>
+                <span class="status-text" id="system-status">SYSTEM ONLINE</span>
             </div>
         </header>
 
-        <main>
-            <div class="visualizer-container">
-                <div class="arc-reactor">
-                    <div class="core"></div>
-                    <div class="ring-1"></div>
-                    <div class="ring-2"></div>
-                    <div class="ring-3"></div>
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="chat">💬 Chat</button>
+            <button class="tab-btn" data-tab="report">📊 Daily Report</button>
+            <button class="tab-btn" data-tab="agents">⚡ Agents</button>
+        </nav>
+
+        <!-- Chat Tab -->
+        <section class="tab-panel active" id="tab-chat">
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message system">
+                        <p>Welcome back, sir. All systems operational. 23 agents standing by.</p>
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="text-input" placeholder="Type a command for Jon..." autocomplete="off">
+                    <button id="send-btn" class="send-btn">➤</button>
+                    <button id="mic-btn" class="mic-btn" title="Voice command">🎙️</button>
                 </div>
             </div>
+        </section>
 
-            <div class="transcript-container">
-                <p id="transcript" class="waiting">Awaiting command...</p>
-                <p id="response-text" class="jarvis-response"></p>
+        <!-- Daily Report Tab -->
+        <section class="tab-panel" id="tab-report">
+            <div class="report-container">
+                <div class="report-header">
+                    <h2>CEO Daily Report — <span id="report-date">Loading...</span></h2>
+                    <button class="refresh-btn" id="refresh-report">↻ Refresh</button>
+                </div>
+                <div class="report-content" id="report-content">
+                    <div class="loading">Generating report from Jon...</div>
+                </div>
             </div>
+        </section>
 
-            <div class="controls">
-                <button id="mic-btn" class="mic-inactive">
-                    <span class="mic-icon">🎙️</span>
-                </button>
-                <p class="instruction">Tap to speak with Jon Snow</p>
+        <!-- Agents Tab -->
+        <section class="tab-panel" id="tab-agents">
+            <div class="agents-container">
+                <h2>Tiny's Army — <span id="agent-total">23</span> Agents</h2>
+                <div class="agent-grid" id="agent-grid">
+                    <div class="loading">Loading agent roster...</div>
+                </div>
             </div>
-        </main>
+        </section>
 
         <footer>
             <div class="stats-bar">

@@ -5,6 +5,7 @@ and daily standup collection.
 """
 
 import json
+import os
 import uuid
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
@@ -178,46 +179,55 @@ class JonCEO(BaseAgent):
         finally:
             db.close()
 
-        # Generate summary via LLM
-        summary_context = f"""
-        Agency: {settings.agency_name}
-        Date: {date_str}
-        Active Agents: 23
-        Campaigns: {len(campaigns)}
-        Campaign Status: {status_counts}
+        # Generate summary via LLM (skip in quick mode for speed)
+        summary = f"Agency operational. {len(campaigns)} campaigns, {len(agent_updates)} agent updates."
+        tomorrow_priorities = [
+            "Review campaign progress and adjust timelines",
+            "Follow up on pending client approvals",
+            "Check agent workload distribution",
+            "Monitor active campaign metrics",
+            "Prepare tomorrow's standup agenda",
+        ]
 
-        Agent Activity Summary:
-        {chr(10).join(f"- {u.agent_name}: {len(u.completed)} completed, {len(u.in_progress)} in progress" for u in agent_updates[:10])}
+        # Only call LLM if we have time (not in quick mode)
+        use_llm = os.getenv("DAILY_REPORT_LLM", "true").lower() == "true"
+        if use_llm:
+            summary_context = f"""
+            Agency: {settings.agency_name}
+            Date: {date_str}
+            Active Agents: 23
+            Campaigns: {len(campaigns)}
+            Campaign Status: {status_counts}
 
-        Decisions: {len(decisions_made)}
-        Issues: {len(issues_flags)}
-        """
+            Agent Activity Summary:
+            {chr(10).join(f"- {u.agent_name}: {len(u.completed)} completed, {len(u.in_progress)} in progress" for u in agent_updates[:10])}
 
-        try:
-            summary_response = await self.think(
-                task="Write a brief executive summary (2-3 sentences) of today's agency activity.",
-                context=summary_context,
-            )
-            summary = summary_response.strip()
-        except Exception:
-            total_completed = sum(len(u.completed) for u in agent_updates)
-            summary = f"Agency operational. {total_completed} tasks completed across {len(agent_updates)} agents. {len(campaigns)} campaigns active."
+            Decisions: {len(decisions_made)}
+            Issues: {len(issues_flags)}
+            """
 
-        # Generate tomorrow's priorities via LLM
-        try:
-            priorities_response = await self.think(
-                task="List 3-5 priority items for tomorrow based on current campaign status and agent workloads.",
-                context=summary_context,
-            )
-            tomorrow_priorities = [
-                line.strip("-• 0123456789.")
-                for line in priorities_response.strip().split("\n")
-                if line.strip() and len(line.strip()) > 5
-            ][:5]
-        except Exception:
-            tomorrow_priorities = [
-                "Review campaign progress and adjust timelines",
-                "Follow up on pending deliverables",
+            try:
+                summary_response = await self.think(
+                    task="Write a brief executive summary (2-3 sentences) of today's agency activity.",
+                    context=summary_context,
+                )
+                summary = summary_response.strip()
+            except Exception:
+                total_completed = sum(len(u.completed) for u in agent_updates)
+                summary = f"Agency operational. {total_completed} tasks completed across {len(agent_updates)} agents. {len(campaigns)} campaigns active."
+
+            try:
+                priorities_response = await self.think(
+                    task="List 3-5 priority items for tomorrow based on current campaign status and agent workloads.",
+                    context=summary_context,
+                )
+                tomorrow_priorities = [
+                    line.strip("-• 0123456789.")
+                    for line in priorities_response.strip().split("\n")
+                    if line.strip() and len(line.strip()) > 5
+                ][:5]
+            except Exception:
+                pass  # keep defaults                "Follow up on pending deliverables",
                 "Prepare for upcoming client check-ins",
             ]
 
