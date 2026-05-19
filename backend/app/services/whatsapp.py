@@ -25,8 +25,13 @@ class WhatsAppService:
     @property
     def is_configured(self) -> bool:
         """Check if Twilio credentials are properly configured."""
+        # Account SID must start with 'AC'
+        is_sid_valid = self.account_sid and self.account_sid.startswith("AC")
+        if self.account_sid and not is_sid_valid:
+            print(f"[WhatsApp Warning] Invalid Twilio Account SID format: {self.account_sid}. Must start with 'AC'.")
+
         return all([
-            self.account_sid,
+            is_sid_valid,
             self.auth_token,
             self.from_number,
         ])

@@ -72,7 +72,15 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", description="Logging level")
     api_host: str = Field(default="0.0.0.0", description="API server host")
     api_port: int = Field(default=8000, description="API server port")
-    cors_origins: List[str] = Field(default=["http://localhost:3000", "http://localhost:5173"], description="Allowed CORS origins")
+    cors_origins: List[str] = Field(
+        default=[
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "https://app.fankaar.digital",
+            "https://www.fankaar.digital"
+        ],
+        description="Allowed CORS origins"
+    )
 
     class Config:
         env_file = ".env"

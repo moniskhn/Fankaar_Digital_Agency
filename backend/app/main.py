@@ -7,10 +7,10 @@ import os
 import threading
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -47,6 +47,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Domain Redirection Middleware ──────────────────────────────
+@app.middleware("http")
+async def redirect_www_to_app(request: Request, call_next):
+    host = request.headers.get("host", "")
+    if host.startswith("www.fankaar.digital"):
+        url = request.url.replace(netloc="app.fankaar.digital")
+        return RedirectResponse(url, status_code=301)
+    return await call_next(request)
 
 # ── Health / Root ──────────────────────────────────────────────
 @app.get("/health")
