@@ -33,12 +33,30 @@
             </div>
 
             <div class="controls">
-                <button id="mic-btn" class="mic-inactive">
-                    <span class="mic-icon">🎙️</span>
-                </button>
-                <p class="instruction">Tap to speak with Jon Snow</p>
+                <div class="voice-controls">
+                    <button id="mic-btn" class="mic-inactive">
+                        <span class="mic-icon">🎙️</span>
+                    </button>
+                    <p class="instruction">Tap to speak with Jon Snow</p>
+                </div>
+
+                <div class="text-controls">
+                    <input type="text" id="text-input" placeholder="Type a message to Jon...">
+                    <button id="send-btn">SEND</button>
+                </div>
+
+                <div class="action-controls">
+                    <button id="report-btn">LATEST REPORT</button>
+                </div>
             </div>
         </main>
+
+        <div id="report-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <div id="report-content"></div>
+            </div>
+        </div>
 
         <footer>
             <div class="stats-bar">

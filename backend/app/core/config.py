@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     moonshot_base_url: str = Field(default="https://api.moonshot.ai/v1", description="Moonshot API base URL")
     llm_temperature: float = Field(default=0.7, description="LLM sampling temperature")
     llm_max_tokens: int = Field(default=4096, description="Max tokens per LLM response")
-    llm_timeout: int = Field(default=120, description="LLM request timeout in seconds")
+    llm_timeout: int = Field(default=30, description="LLM request timeout in seconds")
 
     # ── WhatsApp / Twilio ──────────────────────────────────────────
     twilio_account_sid: str = Field(default="", description="Twilio Account SID")

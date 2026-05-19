@@ -414,6 +414,15 @@ async def generate_daily_report(date_str: Optional[str] = None):
     return report
 
 
+@ceo_router.get("/latest-report")
+async def get_latest_report(db: Session = Depends(get_db)):
+    """Get the latest daily report from the database."""
+    report = db.query(ReportModel).order_by(ReportModel.created_at.desc()).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="No reports found")
+    return report
+
+
 @ceo_router.post("/daily-report/send")
 async def send_daily_report():
     """Generate and send daily report via WhatsApp."""

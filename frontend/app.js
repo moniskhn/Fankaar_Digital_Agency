@@ -7,6 +7,12 @@ const micBtn = document.getElementById('mic-btn');
 const transcript = document.getElementById('transcript');
 const responseText = document.getElementById('response-text');
 const arcReactor = document.querySelector('.arc-reactor');
+const textInput = document.getElementById('text-input');
+const sendBtn = document.getElementById('send-btn');
+const reportBtn = document.getElementById('report-btn');
+const reportModal = document.getElementById('report-modal');
+const closeBtn = document.querySelector('.close-btn');
+const reportContent = document.getElementById('report-content');
 
 // ── Voice Recognition Setup ──────────────────────────────────
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -119,6 +125,91 @@ micBtn.addEventListener('click', () => {
         recognition.start();
     }
 });
+
+sendBtn.addEventListener('click', () => {
+    const message = textInput.value.trim();
+    if (message) {
+        transcript.textContent = `"${message}"`;
+        transcript.classList.remove('waiting');
+        processCommand(message);
+        textInput.value = '';
+    }
+});
+
+textInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendBtn.click();
+    }
+});
+
+reportBtn.addEventListener('click', fetchLatestReport);
+
+closeBtn.addEventListener('click', () => {
+    reportModal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target == reportModal) {
+        reportModal.style.display = 'none';
+    }
+});
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+async function fetchLatestReport() {
+    reportContent.innerHTML = "<h2>Loading report...</h2>";
+    reportModal.style.display = 'block';
+
+    try {
+        const response = await fetch('/api/ceo/latest-report');
+        if (!response.ok) {
+            throw new Error('Report not found');
+        }
+        const data = await response.json();
+        renderReport(data);
+    } catch (error) {
+        reportContent.innerHTML = `<h2>Error</h2><p>${escapeHtml(error.message)}</p>`;
+    }
+}
+
+function renderReport(report) {
+    let html = `
+        <h2>Daily Report — ${escapeHtml(report.date)}</h2>
+        <div class="section">
+            <h3>Executive Summary</h3>
+            <p>${escapeHtml(report.summary)}</p>
+        </div>
+
+        <div class="section">
+            <h3>Campaign Status</h3>
+            <ul>
+                ${report.campaigns_status.map(c => `
+                    <li><strong>${escapeHtml(c.campaign_name)}:</strong> ${escapeHtml(c.status)} (${c.progress_pct}% complete)</li>
+                `).join('')}
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>Tomorrow's Priorities</h3>
+            <ol>
+                ${report.tomorrow_priorities.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+            </ol>
+        </div>
+
+        <div class="section">
+            <h3>Owner Attention Required</h3>
+            <ul>
+                ${report.owner_attention_required.map(a => `<li>${escapeHtml(a)}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+    reportContent.innerHTML = html;
+}
 
 // Randomize stats for flavor
 setInterval(() => {
