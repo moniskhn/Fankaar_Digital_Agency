@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fankaar Digital — Social Account Setup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --dark: #0a0a0a;
+            --card: #111;
+            --text: #eee;
+            --muted: #888;
+            --border: #222;
+            --success: #00ff64;
+            --warn: #ffaa00;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        .logo { text-align: center; font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+        .sub { text-align: center; color: var(--muted); font-size: 0.8rem; margin-bottom: 30px; }
+        h1 { font-size: 1.4rem; margin-bottom: 8px; }
+        .intro { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5; }
+        .platform {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .platform-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+        }
+        .ig { background: #E1306C; }
+        .tt { background: #000; border: 1px solid #333; }
+        .li { background: #0077B5; }
+        .tw { background: #1DA1F2; }
+        .platform-title { font-weight: 600; font-size: 1rem; }
+        .platform-handle { color: var(--muted); font-size: 0.8rem; }
+        .step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+        .step-num {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 600;
+            flex-shrink: 0;
+        }
+        .step.done .step-num { background: var(--success); color: var(--dark); }
+        .step-text { font-size: 0.85rem; line-height: 1.4; color: var(--text); }
+        .step-text a { color: var(--primary); text-decoration: none; }
+        .copy-field {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-family: monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 6px 0;
+            cursor: pointer;
+        }
+        .copy-field:hover { border-color: var(--primary); }
+        .copy-field .label { color: var(--muted); font-size: 0.7rem; font-family: 'Inter', sans-serif; }
+        .copy-field .val { color: var(--text); }
+        .copy-btn { color: var(--primary); font-size: 0.7rem; font-family: 'Inter', sans-serif; }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .ready { color: var(--success); font-weight: 600; }
+        .pending { color: var(--warn); }
+        .warning-box {
+            background: rgba(255,170,0,0.1);
+            border: 1px solid var(--warn);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+        }
+        .all-done {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+        .all-done h2 { margin-bottom: 12px; }
+        .all-done p { color: var(--muted); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">FANKAAR DIGITAL</div>
+        <div class="sub">Social Account Setup — Guided</div>
+
+        <div class="warning-box">
+            <strong>Only 1 thing needs you:</strong> Type the SMS verification code when it arrives. Everything else is pre-filled. Total time: ~15 minutes.
+        </div>
+
+        <!-- Password (same for all) -->
+        <div class="platform">
+            <div class="platform-header">
+                <div class="platform-icon" style="background:#444;">🔐</div>
+                <div>
+                    <div class="platform-title">Master Password</div>
+                    <div class="platform-handle">Same for all accounts. Copy once.</div>
+                </div>
+            </div>
+            <div class="copy-field" onclick="copy(this)">
+                <span class="val" id="password">Loading...</span>
+                <span class="copy-btn">COPY</span>
+            </div>
+        </div>
+
+        <!-- Instagram -->
+        <div class="platform">
+            <div class="platform-header">
+                <div class="platform-icon ig">📸</div>
+                <div>
+                    <div class="platform-title">Instagram</div>
+                    <div class="platform-handle">@fankaar.digital</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    Open <a href="https://www.instagram.com/accounts/emailsignup/" target="_blank">instagram.com/accounts/emailsignup</a> on your phone (not desktop — phone verification is smoother on mobile)
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    Use this email:<br>
+                    <div class="copy-field" onclick="copy(this)">
+                        <span class="val">fankaar.social@gmail.com</span>
+                        <span class="copy-btn">COPY</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    Full Name: <b>Fankaar Digital</b><br>
+                    Username: <b>fankaar.digital</b> (if taken, try <b>fankaar_digital</b> or <b>fankaaragency</b>)<br>
+                    Password: Use the master password above ↑<br>
+                    Birthday: <b>June 15, 1995</b>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-text">
+                    <b>You'll get an SMS code.</b> Type it. That's the only manual step.
+                </div>
+            </div>
+            <a class="btn" href="https://www.instagram.com/accounts/emailsignup/" target="_blank">Open Instagram Signup →</a>
+        </div>
+
+        <!-- TikTok -->
+        <div class="platform">
+            <div class="platform-header">
+                <div class="platform-icon tt">🎵</div>
+                <div>
+                    <div class="platform-title">TikTok</div>
+                    <div class="platform-handle">@fankaar.digital</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    Open <a href="https://www.tiktok.com/signup" target="_blank">tiktok.com/signup</a> on your phone
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    Choose "Use phone/email" → Use phone number<br>
+                    After signup, go to Profile → Edit Profile → Username: <b>fankaar.digital</b>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <b>SMS code arrives → type it → done.</b>
+                </div>
+            </div>
+            <a class="btn" href="https://www.tiktok.com/signup" target="_blank">Open TikTok Signup →</a>
+        </div>
+
+        <!-- LinkedIn -->
+        <div class="platform">
+            <div class="platform-header">
+                <div class="platform-icon li">💼</div>
+                <div>
+                    <div class="platform-title">LinkedIn</div>
+                    <div class="platform-handle">Company Page: Fankaar Digital</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    You need a <b>personal LinkedIn account first</b>. If you already have one, skip to step 3.<br>
+                    If not: <a href="https://www.linkedin.com/signup" target="_blank">linkedin.com/signup</a> — use your real name, same email.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    Then create company page:<br>
+                    <a href="https://www.linkedin.com/company/new/" target="_blank">linkedin.com/company/new</a>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    Company Name: <b>Fankaar Digital</b><br>
+                    Website: <b>fankaar.digital</b><br>
+                    Industry: <b>Marketing & Advertising</b><br>
+                    Size: <b>11-50 employees</b><br>
+                    Type: <b>Privately Held</b>
+                </div>
+            </div>
+            <a class="btn" href="https://www.linkedin.com/company/new/" target="_blank">Create LinkedIn Company Page →</a>
+        </div>
+
+        <!-- Twitter/X -->
+        <div class="platform">
+            <div class="platform-header">
+                <div class="platform-icon tw">𝕏</div>
+                <div>
+                    <div class="platform-title">Twitter / X</div>
+                    <div class="platform-handle">@fankaardigital</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    Open <a href="https://twitter.com/i/flow/signup" target="_blank">twitter.com/i/flow/signup</a>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    Name: <b>Fankaar Digital</b><br>
+                    Email: <b>fankaar.social@gmail.com</b><br>
+                    Password: master password above ↑<br>
+                    Birth date: <b>June 15, 1995</b>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    Username: <b>fankaardigital</b> (no dot — Twitter doesn't allow dots in handles)
+                </div>
+            </div>
+            <a class="btn" href="https://twitter.com/i/flow/signup" target="_blank">Open Twitter Signup →</a>
+        </div>
+
+        <!-- Bio & Profile -->
+        <div class="platform">
+            <div class="platform-header">
+                <div class="platform-icon" style="background:var(--primary);">📝</div>
+                <div>
+                    <div class="platform-title">Bio / Profile (All Platforms)</div>
+                    <div class="platform-handle">Copy-paste this everywhere</div>
+                </div>
+            </div>
+            <div class="copy-field" onclick="copy(this)" style="align-items:flex-start;flex-direction:column;gap:4px;">
+                <span class="label">BIO</span>
+                <span class="val" style="white-space:normal;line-height:1.4;">AI-powered marketing agency. 23 agents. 24/7 execution. We grow brands faster than traditional agencies. Dubai · Worldwide → fankaar.digital</span>
+                <span class="copy-btn" style="align-self:flex-end;">COPY</span>
+            </div>
+            <div class="copy-field" onclick="copy(this)">
+                <span class="label">WEBSITE LINK</span>
+                <span class="val">fankaar.digital</span>
+                <span class="copy-btn">COPY</span>
+            </div>
+            <div class="copy-field" onclick="copy(this)">
+                <span class="label">WHATSAPP</span>
+                <span class="val">+971501006735</span>
+                <span class="copy-btn">COPY</span>
+            </div>
+        </div>
+
+        <!-- Done -->
+        <div class="all-done" id="done-section">
+            <h2 class="ready">All accounts created?</h2>
+            <p>Send me the usernames/handles. I'll connect them to Missandei immediately.</p>
+            <button class="btn" onclick="alert('Send the handles to Tiny on WhatsApp/Kimi')">Send Handles to Tiny →</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Generate secure password
+        function generatePassword() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+            let pw = '';
+            for (let i = 0; i < 14; i++) {
+                pw += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return pw + '!';
+        }
+        document.getElementById('password').textContent = generatePassword();
+
+        // Copy to clipboard
+        function copy(el) {
+            const text = el.querySelector('.val').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = el.querySelector('.copy-btn');
+                const old = btn.textContent;
+                btn.textContent = 'COPIED!';
+                setTimeout(() => btn.textContent = old, 1500);
+            });
+        }
+    </script>
+</body>
+</html>
