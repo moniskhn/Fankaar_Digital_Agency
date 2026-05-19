@@ -227,9 +227,7 @@ class JonCEO(BaseAgent):
                     if line.strip() and len(line.strip()) > 5
                 ][:5]
             except Exception:
-                pass  # keep defaults                "Follow up on pending deliverables",
-                "Prepare for upcoming client check-ins",
-            ]
+                pass  # keep defaults
 
         # Items needing owner attention
         owner_attention = []
