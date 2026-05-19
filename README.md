@@ -1,55 +1,112 @@
 # 🐺 Fankaar Digital AI Agency
 
-Welcome to your very own AI Digital Marketing Agency! This is like having 23 super-smart friends (like in Game of Thrones!) who work together to help you. You even have a special "Jarvis" screen to talk to them with your voice!
+Autonomous AI Digital Marketing Agency with 23 specialized agents, voice-powered JARVIS interface, campaign engine, billing, and WhatsApp integration.
 
-## 🚀 How to Start (The 5-Year-Old Version)
+## 🚀 Quick Start (Local)
 
-Follow these easy steps to wake up your agency:
-
-### 1. Get your tools ready
-Open your terminal (the black box where you type commands) and type:
 ```bash
 pip install -r requirements.txt
-```
-*This is like making sure you have all the LEGO bricks before you start building.*
-
-### 2. Tell the computer where the agency is
-Type this command so the computer knows where to look:
-```bash
 export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --app-dir backend
 ```
 
-### 3. Wake up Jon Snow and the team
-Type this to start the agency:
-```bash
-python backend/app/main.py
-```
-*Wait for the screen to say "App startup complete". This means Jon Snow is at his desk!*
-
-### 4. Open your Jarvis screen
-Open your web browser (like Chrome) and go to:
-**http://localhost:8000**
-
-### 5. Start talking!
-1. Click the **Microphone** button.
-2. Say something like: *"Jon, how is the team doing today?"*
-3. Jon Snow will hear you and talk back to you!
+Open **http://localhost:8000** to use the JARVIS voice interface.
 
 ---
 
-## 🛠️ For the Grown-ups (Technical Details)
+## 🛠️ Deployment (Railway)
 
-- **Backend**: FastAPI (Python 3.11)
-- **Database**: SQLite with SQLAlchemy (using `extra_metadata` to avoid conflicts)
-- **Voice**: Web Speech API (SpeechRecognition + Synthesis)
-- **Agents**: 23 autonomous agents with independent memory.
-- **Port**: Runs on port 8000 by default.
+### 1. Fork / Connect Repo
+Push this repo to GitHub and connect it in [Railway](https://railway.app).
 
-### Running with Uvicorn (Recommended)
-```bash
-export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+### 2. Add Environment Variables
+In Railway Dashboard → Variables, add:
+
+| Variable | Value | Required |
+|----------|-------|----------|
+| `MOONSHOT_API_KEY` | Your Kimi/Moonshot API key | ✅ Yes |
+| `TWILIO_ACCOUNT_SID` | `AC...` (must start with AC) | For WhatsApp |
+| `TWILIO_AUTH_TOKEN` | From Twilio Console | For WhatsApp |
+| `TWILIO_WHATSAPP_NUMBER` | `+14155238886` | For WhatsApp |
+| `OWNER_WHATSAPP_NUMBER` | `+971501006735` | For daily reports |
+| `AGENCY_NAME` | `Fankaar Digital` | No |
+| `OWNER_NAME` | `Monis` | No |
+| `APP_ENV` | `production` | No |
+
+**⚠️ Important:**
+- Twilio Account SID **must start with `AC`**. If yours starts with `USd`, it's incorrect — get the real one from [Twilio Console](https://console.twilio.com/).
+- The Kimi API key is also your Moonshot key (same service).
+
+### 3. Add Persistent Volume (for database)
+Railway Dashboard → Volumes → Add Volume:
+- **Mount Path:** `/app/data`
+- **Size:** 1GB (or more)
+
+Without this, your database resets on every deploy.
+
+### 4. Custom Domain
+Railway Dashboard → Settings → Domains:
+- Add `app.fankaar.digital`
+- Point your DNS A record to the Railway-provided IP, or CNAME to the Railway domain
+
+---
+
+## 🎙️ JARVIS Voice Interface
+
+The root path (`/`) serves the JARVIS voice command center. Tap the microphone and speak commands like:
+- *"Jon, generate the daily report"*
+- *"Jon, what's the team status?"*
+- *"Jon, assign a task to Sandor"*
+
+---
+
+## 📋 Lead Intake Form
+
+`POST /webhook/intake`
+
+Accepts form data or JSON:
+```json
+{
+  "name": "Client Name",
+  "email": "client@example.com",
+  "company": "Company LLC",
+  "message": "Project details...",
+  "budget_range": "5000-10000 AED",
+  "service_interest": "Social Media Management"
+}
 ```
 
-### Starting the Worker
-The agents start working automatically in the background. You can check their status at `http://localhost:8000/api/runtime/status`.
+Sandor (Sales Director) will auto-qualify the lead via AI.
+
+---
+
+## 🔧 API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Health check |
+| `GET /api/agents` | List all 23 agents |
+| `POST /api/ceo/message` | Talk to Jon Snow |
+| `POST /api/campaigns` | Create campaign |
+| `POST /webhook/intake` | Lead form submission |
+| `POST /webhook/whatsapp` | Twilio WhatsApp webhook |
+
+Full docs at `/docs` (Swagger UI) or `/redoc`.
+
+---
+
+## 🏗️ Architecture
+
+- **Backend:** FastAPI (Python 3.11)
+- **Database:** SQLite (with Railway Volume for persistence)
+- **Agents:** 23 autonomous agents with memory + task queue
+- **LLM:** Moonshot (Kimi) primary, OpenAI/Anthropic/Ollama fallback
+- **Voice:** Web Speech API (browser-based)
+- **Worker:** Background asyncio loop for autonomous task execution
+- **WhatsApp:** Twilio API for daily reports and owner commands
+
+---
+
+## 📝 License
+
+Built for Fankaar Digital.

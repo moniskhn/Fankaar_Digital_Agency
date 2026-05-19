@@ -25,11 +25,31 @@ class WhatsAppService:
     @property
     def is_configured(self) -> bool:
         """Check if Twilio credentials are properly configured."""
-        return all([
+        if not all([
             self.account_sid,
             self.auth_token,
             self.from_number,
-        ])
+        ]):
+            return False
+        # Validate Account SID format (must start with AC)
+        if not self.account_sid.startswith("AC"):
+            return False
+        return True
+
+    def _validate_credentials(self) -> None:
+        """Validate Twilio credentials and raise descriptive errors."""
+        if not self.account_sid:
+            raise ValueError("Twilio Account SID is not configured. Set TWILIO_ACCOUNT_SID in Railway variables.")
+        if not self.auth_token:
+            raise ValueError("Twilio Auth Token is not configured. Set TWILIO_AUTH_TOKEN in Railway variables.")
+        if not self.from_number:
+            raise ValueError("Twilio WhatsApp number is not configured. Set TWILIO_WHATSAPP_NUMBER in Railway variables.")
+        if not self.account_sid.startswith("AC"):
+            raise ValueError(
+                f"Invalid Twilio Account SID: '{self.account_sid[:10]}...'. "
+                "Twilio Account SIDs must start with 'AC'. "
+                "Check your Twilio Console at https://console.twilio.com/"
+            )
 
     async def send_message(self, to_number: str, body: str) -> bool:
         """
@@ -46,6 +66,13 @@ class WhatsAppService:
             # Log the message for development instead
             print(f"[WhatsApp DEV] To: {to_number}\n{body[:200]}...")
             return True
+
+        # Validate before sending
+        try:
+            self._validate_credentials()
+        except ValueError as e:
+            print(f"[WhatsApp Error] {e}")
+            return False
 
         if not to_number.startswith("whatsapp:"):
             to_number = f"whatsapp:{to_number}"
