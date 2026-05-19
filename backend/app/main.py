@@ -50,9 +50,10 @@ app.add_middleware(
 
 # ── Domain Redirection Middleware ──────────────────────────────
 @app.middleware("http")
-async def redirect_www_to_app(request: Request, call_next):
+async def redirect_railway_to_app(request: Request, call_next):
     host = request.headers.get("host", "")
-    if host.startswith("www.fankaar.digital"):
+    # Redirect Railway default domains to app.fankaar.digital
+    if ".up.railway.app" in host:
         url = request.url.replace(netloc="app.fankaar.digital")
         return RedirectResponse(url, status_code=301)
     return await call_next(request)
