@@ -66,7 +66,9 @@ class LLMClient:
         last_error = None
         for provider in self.fallback_chain:
             try:
-                if provider == "ollama":
+                if provider == "mock":
+                    return await self._call_mock(prompt, system, temp, max_tok, structured_output)
+                elif provider == "ollama":
                     return await self._call_ollama(prompt, system, temp, max_tok, structured_output)
                 elif provider == "anthropic":
                     return await self._call_anthropic(prompt, system, temp, max_tok, structured_output)
@@ -85,6 +87,40 @@ class LLMClient:
             provider="none",
             model="error",
             latency_ms=0.0,
+        )
+
+    async def _call_mock(
+        self,
+        prompt: str,
+        system: Optional[str],
+        temperature: float,
+        max_tokens: int,
+        structured_output: Optional[Dict[str, Any]],
+    ) -> LLMResponse:
+        """Mock provider — returns a helpful response without calling any API."""
+        import hashlib
+        # Generate a deterministic but varied response based on prompt
+        seed = hashlib.md5(prompt.encode()).hexdigest()[:4]
+        
+        responses = [
+            "I've received your message and I'm processing it. As CEO of Fankaar Digital, I'll coordinate with the relevant agents to handle this.",
+            "Understood. Routing this to the appropriate team member now. I'll update you once I have results.",
+            "Acknowledged. Your request is being handled by Tiny's Army. I'll keep you posted on progress.",
+            "Received. I'm delegating this task to the best-suited agent. Expect an update shortly.",
+            "Copy that. I'm on it — coordinating with the team to get this resolved.",
+        ]
+        idx = int(seed, 16) % len(responses)
+        text = responses[idx]
+        
+        if structured_output:
+            text = json.dumps({"response": text, "status": "ok"})
+        
+        return LLMResponse(
+            text=text,
+            provider="mock",
+            model="mock-mode",
+            latency_ms=50.0,
+            tokens_used=0,
         )
 
     async def _call_ollama(

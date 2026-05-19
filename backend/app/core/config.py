@@ -107,7 +107,7 @@ class Settings(BaseSettings):
     def llm_fallback_chain(self) -> List[str]:
         """LLM provider fallback chain."""
         providers = [self.llm_provider]
-        all_providers = ["moonshot", "anthropic", "openai", "ollama"]
+        all_providers = ["moonshot", "anthropic", "openai", "ollama", "mock"]
         for p in all_providers:
             if p not in providers:
                 providers.append(p)
