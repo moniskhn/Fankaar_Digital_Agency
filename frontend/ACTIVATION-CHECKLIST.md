@@ -82,11 +82,14 @@ This is your first piece of content. Sandor will use it as social proof when rea
 >
 > 15 minutes. No pitch. Just a look at what we'd build for you."
 
-### 6. Give Sandor Authority (2 minutes)
+### 6. Give Sandor Authority ✅ DONE
 
 Reply to this message with: "Sandor has authority to close deals up to AED X/month and offer first-month discounts up to Y%."
 
-If you don't set this, Sandor will ask you for every decision and slow everything down.
+**CONFIRMED:**
+- ✅ Sandor can close deals up to **AED 5,000/month** without approval
+- ✅ Sandor can offer **20% first-month discount** without approval
+- ✅ Sandor never says "I'll check with my boss" under AED 5,000
 
 ### 7. Download WhatsApp Business (5 minutes)
 

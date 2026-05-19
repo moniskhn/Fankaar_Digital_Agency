@@ -111,13 +111,28 @@ Template:
 
 ---
 
-## What Sandor Needs From Monis
+## What Sandor Needs From Monis — ✅ DONE
 
 1. **Your availability** — What days/times can you take discovery calls?
 2. **Calendly/Cal.com link** — Set this up so leads can book directly
 3. **Phone for WhatsApp** — Sandor uses WhatsApp for follow-ups. Your number (+971501006735) is listed.
-4. **Authority to offer discounts** — Can Sandor offer "first month 20% off" to close deals?
-5. **Decision on starter package** — Is AED 2,500/month the floor, or can we go lower for first clients?
+4. **Authority to offer discounts** — ✅ **CONFIRMED: Sandor can offer up to 20% first-month discount**
+5. **Decision on deal limits** — ✅ **CONFIRMED: Sandor can close deals up to AED 5,000/month independently**
+
+---
+
+## Sandor's Deal Authority (Active Now)
+
+| Scenario | Sandor's Action |
+|----------|-----------------|
+| Deal ≤ AED 5,000/month | Close immediately, no approval |
+| First-month discount ≤ 20% | Offer without asking |
+| Package customization keeping total ≤ AED 5,000 | Build and close |
+| Deal > AED 5,000/month | Escalate to Monis |
+| Discount > 20% | Escalate to Monis |
+| Non-standard terms | Escalate to Monis |
+
+**Sandor never says "I'll check with my boss." Under AED 5,000, he makes the call.**
 
 ---
 
