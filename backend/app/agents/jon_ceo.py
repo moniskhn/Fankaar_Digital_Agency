@@ -415,7 +415,28 @@ class JonCEO(BaseAgent):
                 task=f"The owner ({settings.owner_name}) said: '{message}'. Respond as Jon Snow, CEO.",
                 context=f"You are Jon Snow, CEO of {settings.agency_name}. Be respectful, honest, and helpful. Address the owner as {settings.owner_name}.",
             )
-            return response
+            return self._clean_response(response)
+
+    def _clean_response(self, text: str) -> str:
+        """Strip markdown, emojis, and formatting from conversational responses."""
+        # Remove markdown
+        text = re.sub(r'\*\*(.*?)\*\*', r'', text)  # bold
+        text = re.sub(r'\*(.*?)\*', r'', text)      # italic
+        text = re.sub(r'__(.*?)__', r'', text)      # underline
+        text = re.sub(r'`(.*?)`', r'', text)         # code
+        # Remove emoji ranges
+        text = re.sub(r'[🌀-🧿☀-⛿✀-➿]', '', text)
+        # Remove bullet points and numbered lists at line start
+        text = re.sub(r'^[\s]*[-•*]\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^[\s]*\d+\.\s+', '', text, flags=re.MULTILINE)
+        # Clean up multiple spaces and newlines
+        text = re.sub(r'  +', ' ', text)
+        text = re.sub(r'
+
++', '
+
+', text)
+        return text.strip()
 
     async def _parse_owner_intent(self, message: str) -> str:
         """Parse the owner's message intent."""
@@ -461,11 +482,9 @@ class JonCEO(BaseAgent):
             ).count()
 
             return (
-                f"🐺 Agency Status:\n\n"
-                f"👥 Agents: {active_count} active, {busy_count} busy\n"
-                f"📊 Campaigns: {len(live_campaigns)} live, {len(campaigns)} total\n"
-                f"📋 Pending tasks: {pending_tasks}\n\n"
-                f"We're operating normally, {settings.owner_name}."
+                f"We're running smooth. {active_count} agents active, {busy_count} busy. "
+                f"{len(live_campaigns)} campaign{'s' if len(live_campaigns) != 1 else ''} live, {len(campaigns)} total. "
+                f"{pending_tasks} task{'s' if pending_tasks != 1 else ''} in the queue."
             )
         finally:
             db.close()
@@ -486,8 +505,7 @@ class JonCEO(BaseAgent):
             db.commit()
 
             return (
-                f"✅ Decision recorded: '{message[:80]}'\n\n"
-                f"I'll cascade this to the relevant agents right away, {settings.owner_name}."
+                f"Got it. I'll make sure the right people know."
             )
         finally:
             db.close()
@@ -511,19 +529,17 @@ class JonCEO(BaseAgent):
 
         if agent:
             return (
-                f"📋 Task assigned to {agent.avatar} {agent.name} ({agent.title}):\n"
-                f"'{task_clean[:100]}'\n\n"
-                f"I'll make sure it's done, {settings.owner_name}."
+                f"Handed it to {agent.name}. They'll take it from here."
             )
         else:
-            return f"I'll find the right person for this and get it moving, {settings.owner_name}."
+            return f"I'll find the right person and get it moving."
 
     async def _handle_praise(self) -> str:
         """Handle owner praise/thanks."""
         responses = [
-            f"Thank you, {settings.owner_name}. The team works hard — I'll pass on your appreciation. 🐺",
-            f"Means a lot coming from you, {settings.owner_name}. We're here to deliver. ⚔️",
-            f"The agency stands ready, as always, {settings.owner_name}. 🏰",
+            "Means a lot. I'll tell the team.",
+            "Appreciate that. We're here to deliver.",
+            "Thank you. The agency stands ready.",
         ]
         import random
         return random.choice(responses)
@@ -531,9 +547,7 @@ class JonCEO(BaseAgent):
     async def _handle_urgent_request(self, message: str) -> str:
         """Handle urgent requests from owner."""
         return (
-            f"⚠️ URGENT — I've flagged this and I'm on it immediately, {settings.owner_name}.\n\n"
-            f"'{message[:100]}'\n\n"
-            f"I'll have an update for you within the hour. 🐺"
+            f"On it. I'll have an update for you within the hour."
         )
 
     # ── Task Delegation ──────────────────────────────────────────

@@ -516,6 +516,48 @@ if (publishNowBtn) {
     });
 }
 
+// ── Share Calendar ─────────────────────────────────────────
+const shareCalendarBtn = document.getElementById('share-calendar-btn');
+
+async function shareCalendar() {
+    const campaignId = prompt('Enter campaign ID to share (or leave blank for all upcoming):');
+    if (campaignId === null) return;
+
+    shareCalendarBtn.textContent = 'Generating...';
+    shareCalendarBtn.disabled = true;
+
+    try {
+        const cid = campaignId.trim() || 'all';
+        const response = await fetchWithTimeout(`${API_BASE}/api/calendar/share/${cid}?format=html`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        if (data.html) {
+            // Open shareable HTML in a new window
+            const shareWindow = window.open('', '_blank', 'width=900,height=700');
+            shareWindow.document.write(data.html);
+            shareWindow.document.close();
+
+            // Also copy JSON link to clipboard
+            const jsonUrl = `${window.location.origin}${API_BASE}/api/calendar/share/${cid}?format=json`;
+            navigator.clipboard.writeText(jsonUrl).then(() => {
+                alert('Shareable calendar opened in new tab. JSON API link copied to clipboard for the client.');
+            }).catch(() => {
+                alert('Shareable calendar opened in new tab.');
+            });
+        }
+    } catch (err) {
+        alert('Share failed: ' + (err.message || 'Unknown error'));
+    } finally {
+        shareCalendarBtn.textContent = '🔗 Share';
+        shareCalendarBtn.disabled = false;
+    }
+}
+
+if (shareCalendarBtn) {
+    shareCalendarBtn.addEventListener('click', shareCalendar);
+}
+
 // ── Deliverables ───────────────────────────────────────────
 let deliverablesCache = null;
 const deliverablesContent = document.getElementById('deliverables-content');
