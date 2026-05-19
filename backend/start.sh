@@ -2,7 +2,7 @@
 set -e
 
 echo "=========================================="
-echo "CLAUDE MYTHOS STARTUP SCRIPT"
+echo "FANKAAR DIGITAL STARTUP SCRIPT"
 echo "=========================================="
 
 echo "[1/4] Checking Python..."

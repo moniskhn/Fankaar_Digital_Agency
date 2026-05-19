@@ -646,6 +646,79 @@ async def get_workloads(db: Session = Depends(get_db)):
 # WhatsApp Webhook
 # ═══════════════════════════════════════════════════════════════
 
+@webhook_router.post("/intake")
+async def lead_intake(request: Request):
+    """
+    Public lead intake form submission.
+    Stores contact info and triggers Sandor (sales) to qualify.
+    """
+    try:
+        body_json = await request.json()
+    except Exception:
+        body_json = None
+
+    if body_json:
+        data = body_json
+    else:
+        try:
+            form = await request.form()
+            data = dict(form)
+        except Exception:
+            data = {}
+
+    name = data.get("name", "Unknown")
+    email = data.get("email", "")
+    company = data.get("company", "")
+    message = data.get("message", data.get("project_details", ""))
+    budget_range = data.get("budget_range", data.get("budget", ""))
+    service_interest = data.get("service_interest", data.get("service", ""))
+    phone = data.get("phone", "")
+
+    db = SessionLocal()
+    try:
+        from app.core.database import generate_uuid, ContactSubmissionModel
+        lead = ContactSubmissionModel(
+            id=generate_uuid(),
+            name=name,
+            email=email,
+            company=company,
+            message=message,
+            budget_range=budget_range,
+            service_interest=service_interest,
+            status="new",
+            notes=f"Phone: {phone}",
+        )
+        db.add(lead)
+        db.commit()
+
+        # Trigger Sandor to qualify via LLM if available
+        try:
+            from app.services.llm_client import llm_client
+            prompt = f"""You are Sandor Clegane, Sales Director at Fankaar Digital.
+A new lead just submitted the intake form:
+- Name: {name}
+- Email: {email}
+- Company: {company}
+- Service Interest: {service_interest}
+- Budget: {budget_range}
+- Message: {message}
+
+Qualify this lead (hot/warm/cold) and write a 2-sentence assessment."""
+            resp = await llm_client.complete(prompt=prompt, max_tokens=200)
+            qualification = resp.text
+        except Exception:
+            qualification = "Lead received. Sandor will review manually."
+
+        return {
+            "status": "received",
+            "lead_id": lead.id,
+            "qualification": qualification,
+            "next_steps": "Sandor will reach out within 24 hours.",
+        }
+    finally:
+        db.close()
+
+
 @webhook_router.post("/whatsapp")
 async def whatsapp_webhook(request: Request):
     """Handle incoming WhatsApp messages from Twilio."""

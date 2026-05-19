@@ -7,10 +7,10 @@ import os
 import threading
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -48,6 +48,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Domain Redirection Middleware ──────────────────────────────
+@app.middleware("http")
+async def redirect_railway_to_app(request: Request, call_next):
+    host = request.headers.get("host", "")
+    # Redirect Railway default domains to app.fankaar.digital
+    if host.endswith(".up.railway.app") and not request.url.path.startswith(("/api/", "/webhook/", "/health", "/docs", "/redoc")):
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"message": "Please visit https://app.fankaar.digital"})
+    return await call_next(request)
+
 # ── Health / Root ──────────────────────────────────────────────
 @app.get("/health")
 async def health_check():
@@ -64,8 +74,8 @@ async def root():
     # Try different locations for frontend
     paths = [
         "frontend/index.html",
+        "/app/frontend/index.html",
         "../frontend/index.html",
-        "/app/frontend/index.html"
     ]
     for p in paths:
         if os.path.exists(p):
@@ -117,13 +127,17 @@ load_routers()
 
 # Mount static files after routers to avoid overriding API paths
 try:
-    if os.path.exists("frontend"):
-        app.mount("/static", StaticFiles(directory="frontend"), name="static")
-        # Also serve everything from root of frontend for JS/CSS imports
-        app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
-    elif os.path.exists("../frontend"):
-        app.mount("/static", StaticFiles(directory="../frontend"), name="static")
-        app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+    static_paths = [("frontend", "frontend"), ("/app/frontend", "frontend"), ("../frontend", "frontend")]
+    mounted = False
+    for static_dir, name in static_paths:
+        if os.path.exists(static_dir):
+            app.mount("/static", StaticFiles(directory=static_dir), name=f"{name}_static")
+            app.mount("/", StaticFiles(directory=static_dir, html=True), name=name)
+            logger.info(f"Mounted static files from {static_dir}")
+            mounted = True
+            break
+    if not mounted:
+        logger.warning("No frontend static files found to mount")
 except Exception as e:
     logger.warning(f"Could not mount static files: {e}")
 
@@ -171,7 +185,7 @@ def bg_init():
 
     logger.info("Background init complete")
 
-threading.Thread(target=bg_init, daemon=True).start()
+bg_init()
 logger.info("App startup complete — waiting for requests")
 
 if __name__ == "__main__":
