@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fankaar Digital — Jarvis Command</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         /* Critical fallback: tab switching always works even if external CSS cached */
@@ -102,6 +102,16 @@
         <section class="tab-panel" id="tab-schedule">
             <div class="schedule-container">
                 <h2>📅 Content Schedule</h2>
+                <div class="schedule-actions">
+                    <button id="refresh-schedule" class="action-btn">↻ Refresh</button>
+                    <button id="publish-now-btn" class="action-btn primary">▶ Publish Now</button>
+                </div>
+                <div class="publish-queue">
+                    <h3>🔥 Publish Queue</h3>
+                    <div id="publish-queue-list" class="queue-list">
+                        <div class="loading">Loading queue...</div>
+                    </div>
+                </div>
                 <div class="schedule-content" id="schedule-content">
                     <div class="loading">Loading schedule...</div>
                 </div>
@@ -126,6 +136,6 @@
             </div>
         </footer>
     </div>
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>

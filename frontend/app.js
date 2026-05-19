@@ -1,6 +1,6 @@
 /**
- * Fankaar Digital — Jarvis Command Interface v4
- * Cache-bust: 2026-05-20-0025
+ * Fankaar Digital — Jarvis Command Interface v6
+ * Cache-bust: 2026-05-20-0130
  */
 
 const API_BASE = '';
@@ -50,7 +50,7 @@ tabBtns.forEach(btn => {
         if (tabId === 'report') loadDailyReport();
         if (tabId === 'agents') loadAgents();
         if (tabId === 'clients') loadClients();
-        if (tabId === 'schedule') loadSchedule();
+        if (tabId === 'schedule') { loadSchedule(); loadPublishQueue(); }
         if (tabId === 'deliverables') loadDeliverables();
     });
 });
@@ -443,6 +443,77 @@ function renderSchedule(posts) {
         `;
     }).join('');
     scheduleContent.innerHTML = html;
+}
+
+// ── Publish Queue ──────────────────────────────────────────
+const publishQueueList = document.getElementById('publish-queue-list');
+const refreshScheduleBtn = document.getElementById('refresh-schedule');
+const publishNowBtn = document.getElementById('publish-now-btn');
+
+async function loadPublishQueue() {
+    if (!publishQueueList) return;
+    publishQueueList.innerHTML = '<div class="loading">Loading publish queue...</div>';
+
+    try {
+        const response = await fetchWithTimeout(`${API_BASE}/api/calendar/publish-queue?hours_ahead=48`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        renderPublishQueue(data.queue || []);
+    } catch (err) {
+        let msg = "Error loading queue.";
+        if (err.name === 'AbortError') msg = "⏱️ Timed out.";
+        publishQueueList.innerHTML = `<div class="loading">${msg}</div>`;
+    }
+}
+
+function renderPublishQueue(queue) {
+    if (!queue || queue.length === 0) {
+        publishQueueList.innerHTML = '<div class="loading">No posts in queue. All caught up.</div>';
+        return;
+    }
+    const html = queue.map(p => {
+        const statusClass = p.status === 'published' ? 'published' : p.status === 'failed' ? 'failed' : '';
+        const statusLabel = p.status === 'published' ? 'PUBLISHED' : p.status === 'failed' ? 'FAILED' : 'SCHEDULED';
+        return `
+        <div class="queue-item ${statusClass}">
+            <div class="queue-platform">${escapeHtml(p.platform || 'General')}</div>
+            <div class="queue-content">${escapeHtml(p.content_text || 'Scheduled post')}</div>
+            <div class="queue-time">${p.hours_until ? p.hours_until + 'h' : 'soon'}</div>
+            <span class="queue-status ${statusClass}">${statusLabel}</span>
+        </div>
+        `;
+    }).join('');
+    publishQueueList.innerHTML = html;
+}
+
+if (refreshScheduleBtn) {
+    refreshScheduleBtn.addEventListener('click', () => {
+        scheduleCache = null;
+        loadSchedule();
+        loadPublishQueue();
+    });
+}
+
+if (publishNowBtn) {
+    publishNowBtn.addEventListener('click', async () => {
+        publishNowBtn.textContent = 'Publishing...';
+        publishNowBtn.disabled = true;
+        try {
+            const response = await fetchWithTimeout(`${API_BASE}/api/calendar/publish-now`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const result = await response.json();
+            alert(`Published: ${result.published || 0} | Failed: ${result.failed || 0}`);
+            loadPublishQueue();
+        } catch (err) {
+            alert('Publish failed: ' + (err.message || 'Unknown error'));
+        } finally {
+            publishNowBtn.textContent = '▶ Publish Now';
+            publishNowBtn.disabled = false;
+        }
+    });
 }
 
 // ── Deliverables ───────────────────────────────────────────

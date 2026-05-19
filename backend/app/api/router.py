@@ -925,6 +925,30 @@ async def get_upcoming_posts(hours: int = 24):
     return posts
 
 
+@calendar_router.get("/publish-queue")
+async def get_publish_queue(hours_ahead: int = 24):
+    """Get posts in the publish queue (scheduled, ready to go)."""
+    from app.services.post_publisher import post_publisher
+    queue = await post_publisher.get_publish_queue(hours_ahead)
+    return {"queue": queue, "count": len(queue)}
+
+
+@calendar_router.post("/publish-now")
+async def publish_now():
+    """Force-run the post publisher immediately."""
+    from app.services.post_publisher import post_publisher
+    result = await post_publisher.run()
+    return result
+
+
+@calendar_router.post("/retry-post/{post_id}")
+async def retry_failed_post(post_id: str):
+    """Retry a failed post."""
+    from app.services.post_publisher import post_publisher
+    result = await post_publisher.retry_failed_post(post_id)
+    return result
+
+
 # ═══════════════════════════════════════════════════════════════
 # Runtime Control Routes
 # ═══════════════════════════════════════════════════════════════

@@ -13,7 +13,10 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from app.services.post_publisher import post_publisher
+from app.services.google_drive_memory import sync_agent_to_drive, restore_agent_from_drive
 from app.core.config import settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +126,30 @@ class RuntimeScheduler:
         )
         logger.info("Scheduled blocker detection every 15 minutes")
 
-        # ── Health Check ───────────────────────────────────────────
+        # ── Post Publisher ──────────────────────────────────────────
+        self.scheduler.add_job(
+            func=self._publish_posts,
+            trigger=IntervalTrigger(minutes=1),
+            id="post_publisher",
+            name="Check and publish due scheduled posts",
+            replace_existing=True,
+            max_instances=1,
+            misfire_grace_time=60,
+        )
+        logger.info("Scheduled post publisher every 1 minute")
+
+        # ── Google Drive Memory Sync ────────────────────────────────
+        self.scheduler.add_job(
+            func=self._sync_memory_to_drive,
+            trigger=IntervalTrigger(hours=1),
+            id="drive_memory_sync",
+            name="Sync agent memory to Google Drive",
+            replace_existing=True,
+            max_instances=1,
+            misfire_grace_time=3600,
+        )
+        logger.info("Scheduled Google Drive memory sync every 1 hour")
+
         self.scheduler.add_job(
             func=self._health_check,
             trigger=IntervalTrigger(minutes=5),
@@ -250,6 +276,41 @@ class RuntimeScheduler:
                 )
         except Exception as e:
             logger.error(f"Health check failed: {e}", exc_info=True)
+
+    async def _publish_posts(self) -> None:
+        """Check and publish due scheduled posts."""
+        try:
+            logger.info("Running scheduled post publisher")
+            from app.services.post_publisher import post_publisher
+            result = await post_publisher.run()
+            if result["checked"] > 0:
+                logger.info(
+                    f"Post publisher: {result['published']} published, "
+                    f"{result['failed']} failed out of {result['checked']} checked"
+                )
+        except Exception as e:
+            logger.error(f"Post publisher job failed: {e}", exc_info=True)
+
+    async def _sync_memory_to_drive(self) -> None:
+        """Sync all agent memories to Google Drive."""
+        try:
+            from app.core.database import AgentModel, SessionLocal
+            from app.core.enhanced_memory import EnhancedAgentMemory
+            from app.services.google_drive_memory import sync_agent_to_drive
+
+            db = SessionLocal()
+            try:
+                agents = db.query(AgentModel).all()
+                synced = 0
+                for agent in agents:
+                    memory = EnhancedAgentMemory(agent.id)
+                    if sync_agent_to_drive(agent.id, memory):
+                        synced += 1
+                logger.info(f"Drive sync complete: {synced}/{len(agents)} agents synced")
+            finally:
+                db.close()
+        except Exception as e:
+            logger.error(f"Drive memory sync failed: {e}", exc_info=True)
 
     async def _cleanup_stale_tasks(self) -> None:
         """Reset tasks stuck in 'in_progress' for too long."""

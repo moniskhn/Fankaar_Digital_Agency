@@ -48,6 +48,36 @@ class EnhancedAgentMemory:
 
     def __init__(self, agent_id: str):
         self.agent_id = agent_id
+        self._drive_sync = None  # Lazy init
+
+    def _get_drive_sync(self):
+        """Lazy init Drive sync — only if enabled."""
+        if self._drive_sync is None:
+            try:
+                from app.services.google_drive_memory import DriveMemorySync, DRIVE_ENABLED
+                if DRIVE_ENABLED:
+                    self._drive_sync = DriveMemorySync(self.agent_id)
+            except Exception:
+                pass
+        return self._drive_sync
+
+    def _sync_to_drive(self):
+        """Push current memory to Google Drive (fire-and-forget)."""
+        sync = self._get_drive_sync()
+        if not sync or not sync.is_available():
+            return
+        try:
+            # Batch sync all compartments
+            episodes = self.get_all_episodes(limit=500)
+            facts = self.get_all_facts(limit=500)
+            patterns = self.get_all_patterns(limit=500)
+            clients = self.get_all_client_memories()
+            sync.push_episodes(episodes)
+            sync.push_facts(facts)
+            sync.push_patterns(patterns)
+            sync.push_client_memories(clients)
+        except Exception:
+            pass  # Drive sync is best-effort
 
     # ── DB helpers ─────────────────────────────────────────────
 
@@ -63,6 +93,50 @@ class EnhancedAgentMemory:
     # ═══════════════════════════════════════════════════════════
     # A. EPISODIC MEMORY  -- "What happened"
     # ═══════════════════════════════════════════════════════════
+
+    def get_all_episodes(self, limit: int = 1000) -> List[Dict[str, Any]]:
+        """Get all episodes (for Drive sync)."""
+        db = self._get_db()
+        try:
+            eps = db.query(AgentEpisodeModel).filter(
+                AgentEpisodeModel.agent_id == self.agent_id
+            ).order_by(desc(AgentEpisodeModel.timestamp)).limit(limit).all()
+            return [ep.to_dict() for ep in eps]
+        finally:
+            db.close()
+
+    def get_all_facts(self, limit: int = 1000) -> List[Dict[str, Any]]:
+        """Get all facts (for Drive sync)."""
+        db = self._get_db()
+        try:
+            facts = db.query(AgentFactModel).filter(
+                AgentFactModel.agent_id == self.agent_id
+            ).limit(limit).all()
+            return [f.to_dict() for f in facts]
+        finally:
+            db.close()
+
+    def get_all_patterns(self, limit: int = 1000) -> List[Dict[str, Any]]:
+        """Get all patterns (for Drive sync)."""
+        db = self._get_db()
+        try:
+            pats = db.query(AgentPatternModel).filter(
+                AgentPatternModel.agent_id == self.agent_id
+            ).limit(limit).all()
+            return [p.to_dict() for p in pats]
+        finally:
+            db.close()
+
+    def get_all_client_memories(self) -> Dict[str, Any]:
+        """Get all client memories (for Drive sync)."""
+        db = self._get_db()
+        try:
+            cms = db.query(AgentClientMemoryModel).filter(
+                AgentClientMemoryModel.agent_id == self.agent_id
+            ).all()
+            return {cm.client_id: cm.to_dict() for cm in cms if cm.client_id}
+        finally:
+            db.close()
 
     def record_episode(
         self,
@@ -104,6 +178,9 @@ class EnhancedAgentMemory:
 
             # Also auto-extract a semantic fact if the episode looks insightful
             self._auto_extract_fact_from_episode(db, episode)
+
+            # Sync to Google Drive (best-effort)
+            self._sync_to_drive()
 
             return episode.id
         finally:
@@ -292,6 +369,10 @@ class EnhancedAgentMemory:
             )
             db.add(fact)
             db.commit()
+
+            # Sync to Google Drive
+            self._sync_to_drive()
+
             return fact.id
         finally:
             db.close()
@@ -450,6 +531,10 @@ class EnhancedAgentMemory:
             )
             db.add(pattern)
             db.commit()
+
+            # Sync to Google Drive
+            self._sync_to_drive()
+
             return pattern.id
         finally:
             db.close()
@@ -639,6 +724,9 @@ class EnhancedAgentMemory:
                 source="explicit_preference",
             )
 
+            # Sync to Google Drive
+            self._sync_to_drive()
+
             return mem.id
         finally:
             db.close()
@@ -762,6 +850,10 @@ class EnhancedAgentMemory:
             )
             db.add(mem)
             db.commit()
+
+            # Sync to Google Drive
+            self._sync_to_drive()
+
             return mem.id
         finally:
             db.close()

@@ -27,6 +27,21 @@ class Settings(BaseSettings):
     llm_max_tokens: int = Field(default=4096, description="Max tokens per LLM response")
     llm_timeout: int = Field(default=120, description="LLM request timeout in seconds")
 
+    # ── Google Drive Memory Sync ───────────────────────────────────
+    google_drive_enabled: bool = Field(default=False, description="Enable Google Drive memory sync")
+    google_drive_folder_id: str = Field(default="", description="Google Drive root folder ID for agent memory")
+    google_service_account_json: str = Field(default="", description="Google service account JSON (inline)")
+    google_service_account_file: str = Field(default="/app/secrets/service-account.json", description="Path to service account JSON file")
+
+    # ── Social Media Posting ───────────────────────────────────────
+    instagram_access_token: str = Field(default="", description="Instagram Graph API access token")
+    instagram_account_id: str = Field(default="", description="Instagram business account ID")
+    tiktok_access_token: str = Field(default="", description="TikTok API access token")
+    facebook_access_token: str = Field(default="", description="Facebook Graph API access token")
+    twitter_api_key: str = Field(default="", description="Twitter/X API key")
+    linkedin_access_token: str = Field(default="", description="LinkedIn API access token")
+    simulate_posting: bool = Field(default=True, description="Simulate posting when no API keys configured")
+
     # ── WhatsApp / Twilio ──────────────────────────────────────────
     twilio_account_sid: str = Field(default="", description="Twilio Account SID")
     twilio_auth_token: str = Field(default="", description="Twilio Auth Token")

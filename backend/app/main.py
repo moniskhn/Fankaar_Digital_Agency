@@ -33,12 +33,60 @@ except Exception as e:
     logger.warning(f"Using safe settings: {e}")
     settings = SafeSettings()
 
-# ── Create App ─────────────────────────────────────────────────
+# ── Create App with Lifespan ─────────────────────────────────
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Start background workers on startup, clean up on shutdown."""
+    logger.info("🚀 Starting Fankaar Digital background services...")
+    
+    # Start agent worker service (includes scheduler + runtime)
+    try:
+        from app.services.agent_worker import start_worker_service
+        await start_worker_service()
+        logger.info("✅ AgentWorkerService + APScheduler started")
+    except Exception as e:
+        logger.error(f"❌ Failed to start worker service: {e}")
+    
+    # Initialize Google Drive memory sync (restore from Drive if available)
+    try:
+        from app.services.google_drive_memory import DRIVE_ENABLED, restore_agent_from_drive
+        from app.core.database import AgentModel, SessionLocal
+        from app.core.enhanced_memory import EnhancedAgentMemory
+        
+        if DRIVE_ENABLED:
+            db = SessionLocal()
+            try:
+                agents = db.query(AgentModel).all()
+                restored = 0
+                for agent in agents:
+                    memory = EnhancedAgentMemory(agent.id)
+                    if restore_agent_from_drive(agent.id, memory):
+                        restored += 1
+                logger.info(f"📦 Restored {restored}/{len(agents)} agents from Google Drive")
+            finally:
+                db.close()
+    except Exception as e:
+        logger.warning(f"Drive restore skipped: {e}")
+    
+    yield
+    
+    # Shutdown
+    logger.info("🛑 Shutting down Fankaar Digital services...")
+    try:
+        from app.services.agent_worker import stop_worker_service
+        await stop_worker_service()
+        logger.info("✅ AgentWorkerService stopped")
+    except Exception as e:
+        logger.error(f"Worker service shutdown error: {e}")
+
 app = FastAPI(
     title=getattr(settings, 'agency_name', 'Fankaar Digital'),
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,

@@ -746,3 +746,113 @@ footer {
     border: 1px solid rgba(255,0,0,0.3);
 }
 
+
+/* Publish Queue Styles */
+.schedule-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    background: rgba(0,210,255,0.1);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--jarvis-blue);
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: var(--jarvis-blue);
+    color: #000;
+}
+
+.action-btn.primary {
+    background: rgba(0,255,100,0.15);
+    border-color: rgba(0,255,100,0.3);
+    color: #00ff64;
+}
+
+.action-btn.primary:hover {
+    background: #00ff64;
+    color: #000;
+}
+
+.publish-queue {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.publish-queue h3 {
+    margin: 0 0 12px 0;
+    color: var(--jarvis-orange);
+    font-size: 0.9rem;
+}
+
+.queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    border-left: 3px solid var(--jarvis-blue);
+}
+
+.queue-item.published {
+    border-left-color: #00ff64;
+    opacity: 0.7;
+}
+
+.queue-item.failed {
+    border-left-color: #ff4444;
+}
+
+.queue-platform {
+    font-weight: bold;
+    color: var(--jarvis-blue);
+    min-width: 80px;
+}
+
+.queue-content {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.queue-time {
+    font-size: 0.75rem;
+    color: #888;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.queue-status {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(0,210,255,0.1);
+    color: var(--jarvis-blue);
+}
+
+.queue-status.published {
+    background: rgba(0,255,100,0.1);
+    color: #00ff64;
+}
+
+.queue-status.failed {
+    background: rgba(255,68,68,0.1);
+    color: #ff4444;
+}
