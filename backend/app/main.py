@@ -86,6 +86,35 @@ async def api_debug():
         "settings_has_moonshot_key": bool(getattr(settings, 'moonshot_api_key', '')),
     }
 
+@app.get("/api/diagnose")
+async def api_diagnose():
+    """Diagnose why routers failed to load."""
+    import importlib, traceback
+    router_map = {
+        "agents": ("app.api.router", "agents_router"),
+        "campaigns": ("app.api.router", "campaigns_router"),
+        "ceo": ("app.api.router", "ceo_router"),
+        "clients": ("app.api.router", "clients_router"),
+        "regional": ("app.api.router", "regional_router"),
+        "dashboard": ("app.api.router", "dashboard_router"),
+        "webhook": ("app.api.router", "webhook_router"),
+        "calendar": ("app.api.router", "calendar_router"),
+        "runtime": ("app.api.router", "runtime_router"),
+        "billing": ("app.api.router", "billing_router"),
+        "onboarding": ("app.api.router", "onboarding_router"),
+        "services": ("app.api.router", "services_router"),
+        "public": ("app.api.router", "public_router"),
+    }
+    results = {}
+    for name, (mod_path, attr) in router_map.items():
+        try:
+            mod = importlib.import_module(mod_path)
+            router = getattr(mod, attr)
+            results[name] = {"status": "ok", "routes": len(router.routes) if hasattr(router, 'routes') else 'unknown'}
+        except Exception as e:
+            results[name] = {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+    return results
+
 @app.get("/")
 async def root():
     # In Docker, frontend is at /app/frontend/
