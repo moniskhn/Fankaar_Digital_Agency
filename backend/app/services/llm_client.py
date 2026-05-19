@@ -92,7 +92,12 @@ class LLMClient:
 
         # All providers failed
         if not attempted_providers:
-            error_msg = "No LLM providers are configured (missing API keys). Please check your .env file."
+            missing_vars = []
+            if not settings.moonshot_api_key: missing_vars.append("MOONSHOT_API_KEY")
+            if not settings.anthropic_api_key: missing_vars.append("ANTHROPIC_API_KEY")
+            if not settings.openai_api_key: missing_vars.append("OPENAI_API_KEY")
+
+            error_msg = f"No LLM providers are configured. Missing variables: {', '.join(missing_vars)}. Please check your .env file."
         else:
             error_msg = f"All attempted LLM providers ({', '.join(attempted_providers)}) failed. Last error: {last_error}"
         return LLMResponse(
