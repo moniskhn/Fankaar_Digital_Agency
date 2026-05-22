@@ -4,12 +4,16 @@ Unified interface for Ollama, Anthropic, and OpenAI with fallback chain.
 """
 
 import json
+import logging
 import time
+import traceback
 from typing import Any, Dict, List, Optional
 
 import httpx
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class LLMResponse:
@@ -78,10 +82,20 @@ class LLMClient:
                     return await self._call_moonshot(prompt, system, temp, max_tok, structured_output)
             except Exception as e:
                 last_error = e
+                logger.error(
+                    "LLM provider '%s' failed: [%s] %s",
+                    provider,
+                    type(e).__name__,
+                    e,
+                    exc_info=True,
+                )
                 continue
 
         # All providers failed
-        error_msg = f"All LLM providers failed. Last error: {last_error}"
+        error_type = type(last_error).__name__ if last_error is not None else "UnknownError"
+        error_detail = str(last_error) if last_error else "no error details captured"
+        error_msg = f"All LLM providers failed. Last error: [{error_type}] {error_detail}"
+        logger.error("All LLM providers exhausted. %s", error_msg)
         return LLMResponse(
             text=f"Error: {error_msg}. Please check your LLM configuration.",
             provider="none",
@@ -291,12 +305,18 @@ class LLMClient:
         structured_output: Optional[Dict[str, Any]],
     ) -> LLMResponse:
         """Call Moonshot (Kimi) API — OpenAI-compatible."""
-        if not settings.moonshot_api_key:
+        key = settings.moonshot_api_key
+        if key:
+            masked = key[:6] + "..." + key[-4:] if len(key) > 10 else "***"
+            logger.info("Moonshot API key is SET (masked: %s), model=%s, base_url=%s",
+                        masked, settings.moonshot_model, settings.moonshot_base_url)
+        else:
+            logger.error("Moonshot API key is EMPTY — cannot call Moonshot API")
             raise ValueError("Moonshot API key not configured")
 
         url = f"{settings.moonshot_base_url.rstrip('/')}/chat/completions"
         headers = {
-            "Authorization": f"Bearer {settings.moonshot_api_key}",
+            "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
         }
 
@@ -316,16 +336,51 @@ class LLMClient:
             payload["response_format"] = {"type": "json_object"}
 
         start = time.time()
-        async with httpx.AsyncClient(timeout=settings.llm_timeout) as client:
-            resp = await client.post(url, headers=headers, json=payload)
-            resp.raise_for_status()
-            data = resp.json()
+        try:
+            async with httpx.AsyncClient(timeout=settings.llm_timeout) as client:
+                logger.info("Moonshot: POST %s (model=%s, max_tokens=%d, temperature=%s)",
+                            url, settings.moonshot_model, max_tokens, temperature)
+                resp = await client.post(url, headers=headers, json=payload)
+                if resp.status_code != 200:
+                    logger.error(
+                        "Moonshot HTTP error %d — response body: %s",
+                        resp.status_code,
+                        resp.text,
+                    )
+                resp.raise_for_status()
+                data = resp.json()
+        except httpx.HTTPStatusError as exc:
+            logger.error(
+                "Moonshot HTTPStatusError: status=%d, body=%s",
+                exc.response.status_code,
+                exc.response.text,
+                exc_info=True,
+            )
+            raise
+        except httpx.RequestError as exc:
+            logger.error(
+                "Moonshot request error (network/timeout): [%s] %s",
+                type(exc).__name__,
+                exc,
+                exc_info=True,
+            )
+            raise
+        except Exception as exc:
+            logger.error(
+                "Moonshot unexpected error: [%s] %s\n%s",
+                type(exc).__name__,
+                exc,
+                traceback.format_exc(),
+            )
+            raise
 
         latency = (time.time() - start) * 1000
         choice = data.get("choices", [{}])[0]
         text = choice.get("message", {}).get("content", "").strip()
 
         usage = data.get("usage", {})
+        logger.info("Moonshot success: latency=%.0fms, tokens=%d",
+                    latency, usage.get("total_tokens", 0))
 
         return LLMResponse(
             text=text,
