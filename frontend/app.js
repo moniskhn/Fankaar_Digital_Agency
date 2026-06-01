@@ -612,11 +612,15 @@ function renderDeliverables(tasks) {
         if (s === 'blocked' || s === 'failed') return 'status-blocked';
         return 'status-pending';
     };
+    const hasBody = t => t.deliverable && t.deliverable !== 'Pending' && t.deliverable.length > 5;
     const html = tasks.map(t => `
         <div class="deliverable-item">
             <div class="deliverable-title">${escapeHtml(t.title)}</div>
             <div class="deliverable-meta">${escapeHtml(t.campaign)} · ${escapeHtml(t.assignee)}</div>
             <span class="deliverable-status ${statusClass(t.status)}">${escapeHtml(t.status)}</span>
+            ${hasBody(t) ? `
+            <button class="deliverable-toggle" style="margin-top:8px;background:none;border:1px solid #2E3750;color:#8B5CF6;border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;" onclick="var b=this.nextElementSibling;var open=b.style.display==='block';b.style.display=open?'none':'block';this.textContent=open?'▸ View deliverable':'▾ Hide deliverable'">▸ View deliverable</button>
+            <pre class="deliverable-body" style="display:none;white-space:pre-wrap;background:#0d0f16;border:1px solid #232A3A;border-radius:8px;padding:12px 14px;margin:8px 0 0;font:12.5px/1.5 ui-monospace,Menlo,monospace;color:#cdd4e0;overflow-x:auto;">${escapeHtml(t.deliverable)}</pre>` : ''}
         </div>
     `).join('');
     deliverablesContent.innerHTML = html;

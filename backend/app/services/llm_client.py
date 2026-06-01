@@ -76,6 +76,8 @@ class LLMClient:
                     return await self._call_openai(prompt, system, temp, max_tok, structured_output)
                 elif provider == "moonshot":
                     return await self._call_moonshot(prompt, system, temp, max_tok, structured_output)
+                elif provider == "kimi":
+                    return await self._call_kimi(prompt, system, temp, max_tok, structured_output)
             except Exception as e:
                 last_error = e
                 continue
@@ -225,6 +227,50 @@ class LLMClient:
             text=text.strip(),
             provider="anthropic",
             model=settings.anthropic_model,
+            latency_ms=latency,
+            tokens_used=usage.get("input_tokens", 0) + usage.get("output_tokens", 0),
+        )
+
+    async def _call_kimi(
+        self,
+        prompt: str,
+        system: Optional[str],
+        temperature: float,
+        max_tokens: int,
+        structured_output: Optional[Dict[str, Any]],
+    ) -> LLMResponse:
+        """Call Kimi Code (Anthropic-compatible Messages API, Bearer auth)."""
+        if not settings.kimi_api_key:
+            raise ValueError("Kimi API key not configured")
+
+        url = settings.kimi_base_url.rstrip("/") + "/v1/messages"
+        headers = {
+            "Authorization": f"Bearer {settings.kimi_api_key}",
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+        }
+        payload: Dict[str, Any] = {
+            "model": settings.kimi_model,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}],
+        }
+        if system:
+            payload["system"] = system
+
+        start = time.time()
+        async with httpx.AsyncClient(timeout=settings.llm_timeout) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+
+        latency = (time.time() - start) * 1000
+        text = "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
+        usage = data.get("usage", {})
+        return LLMResponse(
+            text=text.strip(),
+            provider="kimi",
+            model=settings.kimi_model,
             latency_ms=latency,
             tokens_used=usage.get("input_tokens", 0) + usage.get("output_tokens", 0),
         )

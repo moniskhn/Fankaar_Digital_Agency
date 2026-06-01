@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Mythos — Agency Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0C12;
+    --surface: #11141D;
+    --surface-2: #161A26;
+    --surface-3: #1C2130;
+    --border: #232A3A;
+    --border-2: #2E3750;
+    --fg: #E8ECF4;
+    --muted: #8B96AC;
+    --faint: #5C6680;
+    --primary: #6366F1;
+    --primary-2: #8B5CF6;
+    --accent: #22D3EE;
+    --gold: #E0B341;
+    --green: #34D399;
+    --amber: #FBBF24;
+    --red: #F87171;
+    --radius: 14px;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg); color: var(--fg);
+    -webkit-font-smoothing: antialiased; line-height: 1.5;
+    display: grid; grid-template-columns: 244px 1fr; min-height: 100vh;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Sidebar ── */
+  aside {
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 22px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 4px 6px 24px; }
+  .brand .mark {
+    width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 6px 18px -6px var(--primary);
+  }
+  .brand .name { font-weight: 700; letter-spacing: -0.02em; font-size: 15px; }
+  .brand .sub { font-size: 11px; color: var(--faint); letter-spacing: .04em; text-transform: uppercase; }
+  .nav-group { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); padding: 16px 8px 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+    padding: 9px 10px; border-radius: 9px; color: var(--muted); font-size: 14px; font-weight: 500;
+    background: none; border: none; cursor: pointer; transition: background .18s var(--ease), color .18s var(--ease);
+  }
+  .nav-item:hover { background: var(--surface-2); color: var(--fg); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(99,102,241,.16), rgba(139,92,246,.12)); color: #fff; }
+  .nav-item.active svg { color: var(--primary-2); }
+  .nav-item svg { width: 17px; height: 17px; flex: none; }
+  .nav-item .count { margin-left: auto; font-size: 11px; color: var(--faint); background: var(--surface-3); padding: 1px 7px; border-radius: 99px; }
+  .nav-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ── Main ── */
+  main { display: flex; flex-direction: column; min-width: 0; }
+  header.top {
+    display: flex; align-items: center; gap: 16px; padding: 16px 28px;
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20;
+    background: rgba(10,12,18,.78); backdrop-filter: blur(12px);
+  }
+  .page-title { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-sub { font-size: 13px; color: var(--muted); }
+  .cmd {
+    margin-left: auto; display: flex; align-items: center; gap: 9px; min-width: 260px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px;
+    color: var(--faint); font-size: 13px; cursor: text; transition: border-color .18s var(--ease);
+  }
+  .cmd:focus-within { border-color: var(--primary); }
+  .cmd input { background: none; border: none; color: var(--fg); font: inherit; flex: 1; outline: none; }
+  .cmd kbd { font-size: 11px; background: var(--surface-3); border: 1px solid var(--border-2); border-radius: 5px; padding: 1px 6px; color: var(--muted); }
+  .status-chip { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); padding: 7px 12px; border: 1px solid var(--border); border-radius: 99px; }
+  .dot { width: 7px; height: 7px; border-radius: 99px; background: var(--green); box-shadow: 0 0 0 3px rgba(52,211,153,.18); }
+  .dot.live { animation: pulse 2s var(--ease) infinite; }
+  @keyframes pulse { 0%,100%{ box-shadow: 0 0 0 3px rgba(52,211,153,.18);} 50%{ box-shadow: 0 0 0 5px rgba(52,211,153,.06);} }
+
+  .scroll { padding: 24px 28px 48px; overflow-y: auto; }
+  .section-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 600; margin: 30px 2px 12px; }
+  .section-label:first-child { margin-top: 4px; }
+
+  /* ── KPI cards ── */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
+    position: relative; overflow: hidden; transition: transform .25s var(--ease), border-color .25s var(--ease);
+  }
+  .kpi:hover { transform: translateY(-3px); border-color: var(--border-2); }
+  .kpi::after { content:""; position: absolute; inset: 0 0 auto auto; width: 120px; height: 120px; background: radial-gradient(closest-side, var(--glow, rgba(99,102,241,.14)), transparent 70%); transform: translate(30%,-30%); }
+  .kpi .k-top { display: flex; align-items: center; justify-content: space-between; }
+  .kpi .k-ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-3); color: var(--primary-2); }
+  .kpi .k-trend { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 3px; }
+  .k-trend.up { color: var(--green); } .k-trend.down { color: var(--red); } .k-trend.flat { color: var(--muted); }
+  .kpi .k-val { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; margin-top: 14px; }
+  .kpi .k-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Layout grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+  .panel-head h3 { font-size: 14.5px; font-weight: 650; letter-spacing: -0.01em; }
+  .panel-head .meta { font-size: 12px; color: var(--faint); }
+  .panel-body { padding: 8px; }
+
+  /* ── Agent grid ── */
+  .agents { display: grid; grid-template-columns: repeat(auto-fill, minmax(186px, 1fr)); gap: 10px; padding: 12px; }
+  .agent {
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+    transition: transform .22s var(--ease), border-color .22s var(--ease), background .22s var(--ease); cursor: pointer;
+  }
+  .agent:hover { transform: translateY(-3px); border-color: var(--border-2); background: var(--surface-3); }
+  .agent:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .agent .a-top { display: flex; align-items: center; gap: 10px; }
+  .agent .ava { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; background: linear-gradient(135deg, var(--surface-3), var(--surface)); border: 1px solid var(--border); }
+  .agent .a-name { font-weight: 650; font-size: 14px; letter-spacing: -0.01em; }
+  .agent .a-role { font-size: 11.5px; color: var(--muted); }
+  .agent .a-task { font-size: 12px; color: var(--faint); margin-top: 11px; line-height: 1.45; min-height: 32px; }
+  .agent .a-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .badge { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px; }
+  .badge .bd { width: 6px; height: 6px; border-radius: 99px; }
+  .badge.active { color: var(--green); background: rgba(52,211,153,.1); } .badge.active .bd { background: var(--green); }
+  .badge.busy { color: var(--amber); background: rgba(251,191,36,.1); } .badge.busy .bd { background: var(--amber); }
+  .badge.offline { color: var(--faint); background: rgba(92,102,128,.12); } .badge.offline .bd { background: var(--faint); }
+  .util { font-size: 11px; color: var(--muted); }
+  .util .bar { width: 54px; height: 5px; border-radius: 99px; background: var(--surface); overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 6px; }
+  .util .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-2)); border-radius: 99px; transition: width .8s var(--ease); }
+
+  /* ── Activity feed ── */
+  .feed { display: flex; flex-direction: column; max-height: 520px; overflow-y: auto; }
+  .feed-item { display: flex; gap: 11px; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-item .fa { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 15px; background: var(--surface-2); border: 1px solid var(--border); flex: none; }
+  .feed-item .ft { font-size: 13px; line-height: 1.45; }
+  .feed-item .ft b { font-weight: 600; }
+  .feed-item .fm { font-size: 11px; color: var(--faint); margin-top: 2px; }
+  .feed-item .act { color: var(--primary-2); }
+
+  /* ── Campaigns table ── */
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--faint); font-weight: 600; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background .15s var(--ease); }
+  tbody tr:hover { background: var(--surface-2); }
+  .phase { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 7px; }
+  .phase.live { color: var(--green); background: rgba(52,211,153,.12); }
+  .phase.creation { color: var(--accent); background: rgba(34,211,238,.12); }
+  .phase.strategy { color: var(--primary-2); background: rgba(139,92,246,.14); }
+  .phase.review { color: var(--amber); background: rgba(251,191,36,.12); }
+  .progress { width: 100%; height: 6px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+  .progress i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 99px; transition: width .9s var(--ease); }
+
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s var(--ease), transform .55s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  .demo-flag { font-size: 11px; color: var(--amber); background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.25); padding: 4px 10px; border-radius: 99px; }
+
+  @media (max-width: 1080px) { .kpis { grid-template-columns: repeat(2,1fr); } .grid-2 { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { body { grid-template-columns: 1fr; } aside { display: none; } }
+  @media (prefers-reduced-motion: reduce) { *{ animation: none !important; transition: none !important; } .reveal { opacity:1; transform:none; } html{ scroll-behavior:auto; } }
+</style>
+</head>
+<body>
+  <aside>
+    <div class="brand">
+      <span class="mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 10-4 10 4-10 4z"/><path d="m2 17 10 4 10-4"/><path d="m2 12 10 4 10-4"/></svg>
+      </span>
+      <div>
+        <div class="name">Claude Mythos</div>
+        <div class="sub">Agency Console</div>
+      </div>
+    </div>
+    <div class="nav-group">Overview</div>
+    <button class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Agents<span class="count" id="nav-agents">23</span></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>Campaigns<span class="count" id="nav-campaigns">—</span></button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/></svg>Clients<span class="count" id="nav-clients">—</span></button>
+    <div class="nav-group">Operations</div>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>Runtime</button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendar</button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Billing</button>
+    <div class="nav-group">Leadership</div>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7z"/></svg>Jon — CEO</button>
+    <button class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Daily Report</button>
+  </aside>
+
+  <main>
+    <header class="top">
+      <div>
+        <div class="page-title">Good evening, Owner</div>
+        <div class="page-sub" id="subline">Here's what your 23 AI employees shipped today.</div>
+      </div>
+      <label class="cmd">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="Search agents, campaigns, clients…" aria-label="Search">
+        <kbd>⌘K</kbd>
+      </label>
+      <span class="status-chip" id="conn"><span class="dot live"></span> Connecting…</span>
+    </header>
+
+    <div class="scroll">
+      <div class="section-label">Today at a glance</div>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="grid-2" style="margin-top:24px">
+        <div class="panel reveal">
+          <div class="panel-head"><h3>Agent roster</h3><span class="meta" id="roster-meta">—</span></div>
+          <div class="agents" id="agents"></div>
+        </div>
+        <div class="panel reveal">
+          <div class="panel-head"><h3>Activity feed</h3><span class="meta"><span class="dot live" style="display:inline-block;vertical-align:middle"></span> live</span></div>
+          <div class="feed" id="feed"></div>
+        </div>
+      </div>
+
+      <div class="section-label">Active campaigns</div>
+      <div class="panel reveal">
+        <table>
+          <thead><tr><th>Campaign</th><th>Client</th><th>Phase</th><th>Region</th><th style="width:180px">Progress</th><th>Budget</th></tr></thead>
+          <tbody id="campaigns"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+<script>
+const API = (location.search.match(/api=([^&]+)/) || [])[1] || "http://127.0.0.1:8000";
+
+// ── Authentic fallback (real roster + schema-shaped sample) ──
+const SEED = {
+  agents: [
+    {id:"jon",name:"Jon",role:"CEO",avatar:"👑",status:"active",current_task:"Reviewing daily standup from 22 agents",workload:{utilization_pct:64}},
+    {id:"sandor",name:"Sandor",role:"Sales",avatar:"⚔️",status:"busy",current_task:"Closing the Dorne Tourism retainer",workload:{utilization_pct:88}},
+    {id:"sansa",name:"Sansa",role:"PR",avatar:"🐺",status:"active",current_task:"Drafting crisis statement for client",workload:{utilization_pct:52}},
+    {id:"rhaegar",name:"Rhaegar",role:"Design",avatar:"🐉",status:"busy",current_task:"Hero visuals for Lannister Gold launch",workload:{utilization_pct:91}},
+    {id:"gendry",name:"Gendry",role:"Development",avatar:"🔨",status:"active",current_task:"Building landing page for Winterfell Co.",workload:{utilization_pct:73}},
+    {id:"tywin",name:"Tywin",role:"Finance",avatar:"🦁",status:"active",current_task:"Q2 margin review",workload:{utilization_pct:40}},
+    {id:"olenna",name:"Olenna",role:"HR",avatar:"🌹",status:"offline",current_task:null,workload:{utilization_pct:0}},
+    {id:"tyrion",name:"Tyrion",role:"Content",avatar:"🍷",status:"busy",current_task:"12-post content calendar for Highgarden",workload:{utilization_pct:84}},
+    {id:"missandei",name:"Missandei",role:"Social Media",avatar:"🦋",status:"active",current_task:"Scheduling IG reels for the week",workload:{utilization_pct:67}},
+    {id:"bronn",name:"Bronn",role:"Advertising",avatar:"🎯",status:"busy",current_task:"Optimizing Meta CPA on 3 ad sets",workload:{utilization_pct:79}},
+    {id:"samwell",name:"Samwell",role:"Analytics",avatar:"📚",status:"active",current_task:"Weekly performance rollup",workload:{utilization_pct:48}},
+    {id:"arya",name:"Arya",role:"Research",avatar:"🗡️",status:"active",current_task:"Competitor scan: Braavos market",workload:{utilization_pct:55}},
+  ],
+  stats: {total_agents:23,active_agents:14,busy_agents:6,offline_agents:3,active_campaigns:7,total_clients:11,pending_tasks:34,urgent_tasks:3,tasks_completed_today:18},
+  revenue: {mrr:48200,arr:578400,active_subscriptions:11,churn_rate_pct:2.4},
+  feed: [
+    {actor_avatar:"⚔️",actor:"Sandor",action:"closed deal with",target_id:"Dorne Tourism Board",mins:4},
+    {actor_avatar:"🐉",actor:"Rhaegar",action:"submitted 3 hero concepts for",target_id:"Lannister Gold",mins:12},
+    {actor_avatar:"🎯",actor:"Bronn",action:"cut CPA 18% on",target_id:"Highgarden Wines ads",mins:23},
+    {actor_avatar:"👑",actor:"Jon",action:"approved campaign brief for",target_id:"Winterfell Co.",mins:41},
+    {actor_avatar:"🦋",actor:"Missandei",action:"scheduled 9 posts for",target_id:"week 22",mins:58},
+    {actor_avatar:"🍷",actor:"Tyrion",action:"shipped content calendar for",target_id:"Highgarden",mins:72},
+    {actor_avatar:"📚",actor:"Samwell",action:"flagged a CTR dip on",target_id:"Braavos Bank",mins:96},
+  ],
+  campaigns: [
+    {name:"Lannister Gold — Launch",client:"Casterly Rock LLC",status:"creation",region:"Westerlands",pct:62,budget:24000},
+    {name:"Winterfell Winter Sale",client:"Winterfell Co.",status:"live",region:"The North",pct:88,budget:12000},
+    {name:"Highgarden Wines — Awareness",client:"Tyrell Estates",status:"strategy",region:"The Reach",pct:24,budget:18500},
+    {name:"Dorne Tourism — Summer",client:"Dorne Tourism Board",status:"review",region:"Dorne",pct:71,budget:31000},
+    {name:"Braavos Bank — Trust",client:"Iron Bank",status:"live",region:"Essos",pct:95,budget:42000},
+  ],
+};
+
+const money = n => "$" + (n>=1000 ? (n/1000).toFixed(n%1000?1:0)+"k" : n);
+const cap = s => s ? s[0].toUpperCase()+s.slice(1) : s;
+
+async function getJSON(path){ const r = await fetch(API+path,{signal:AbortSignal.timeout(2500)}); if(!r.ok) throw 0; return r.json(); }
+
+function renderKPIs(s, rev){
+  const cards = [
+    {label:"Active agents", val:`${s.active_agents}/${s.total_agents}`, ico:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>', trend:`${s.busy_agents} busy`, dir:"flat", glow:"rgba(99,102,241,.16)"},
+    {label:"Active campaigns", val:s.active_campaigns, ico:'<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>', trend:"+2 this week", dir:"up", glow:"rgba(34,211,238,.16)"},
+    {label:"MRR", val:rev?money(rev.mrr):"—", ico:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>', trend:rev?`${rev.churn_rate_pct}% churn`:"—", dir:"up", glow:"rgba(52,211,153,.16)"},
+    {label:"Tasks done today", val:s.tasks_completed_today, ico:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>', trend:`${s.urgent_tasks} urgent open`, dir:s.urgent_tasks>0?"down":"flat", glow:"rgba(224,179,65,.16)"},
+  ];
+  document.getElementById("kpis").innerHTML = cards.map(c=>`
+    <div class="kpi" style="--glow:${c.glow}">
+      <div class="k-top">
+        <span class="k-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.ico}</svg></span>
+        <span class="k-trend ${c.dir}">${c.dir==='up'?'▲':c.dir==='down'?'▼':'•'} ${c.trend}</span>
+      </div>
+      <div class="k-val">${c.val}</div>
+      <div class="k-label">${c.label}</div>
+    </div>`).join("");
+}
+
+function renderAgents(list){
+  document.getElementById("agents").innerHTML = list.map(a=>{
+    const u = Math.round(a.workload?.utilization_pct ?? 0);
+    return `<div class="agent" tabindex="0">
+      <div class="a-top">
+        <span class="ava">${a.avatar||"👤"}</span>
+        <div><div class="a-name">${a.name}</div><div class="a-role">${a.role}</div></div>
+      </div>
+      <div class="a-task">${a.current_task || "<span style='opacity:.6'>Idle — awaiting assignment</span>"}</div>
+      <div class="a-foot">
+        <span class="badge ${a.status}"><span class="bd"></span>${cap(a.status)}</span>
+        <span class="util">${u}%<span class="bar"><i style="width:${u}%"></i></span></span>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("roster-meta").textContent = `${list.length} shown`;
+}
+
+function renderFeed(items){
+  document.getElementById("feed").innerHTML = items.map(f=>{
+    const t = f.mins!=null ? `${f.mins}m ago` : (f.timestamp ? new Date(f.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : "");
+    return `<div class="feed-item">
+      <span class="fa">${f.actor_avatar||"👤"}</span>
+      <div><div class="ft"><b>${f.actor}</b> <span class="act">${f.action}</span> ${f.target_id||""}</div><div class="fm">${t}</div></div>
+    </div>`;
+  }).join("");
+}
+
+function renderCampaigns(list){
+  document.getElementById("campaigns").innerHTML = list.map(c=>`
+    <tr>
+      <td style="font-weight:600">${c.name}</td>
+      <td style="color:var(--muted)">${c.client||"—"}</td>
+      <td><span class="phase ${c.status}">${cap(c.status)}</span></td>
+      <td style="color:var(--muted)">${c.region||"—"}</td>
+      <td><div class="progress"><i style="width:${c.pct||0}%"></i></div></td>
+      <td class="mono">${money(c.budget||0)}</td>
+    </tr>`).join("");
+  document.getElementById("nav-campaigns").textContent = list.length;
+}
+
+function setConn(live){
+  const el = document.getElementById("conn");
+  if(live){ el.innerHTML = '<span class="dot live"></span> Live · backend connected'; }
+  else { el.innerHTML = '<span class="demo-flag">demo data · backend offline</span>'; }
+}
+
+async function boot(){
+  let live = false, stats=SEED.stats, rev=SEED.revenue, agents=SEED.agents, feed=SEED.feed, camps=SEED.campaigns;
+  try {
+    const [s, a] = await Promise.all([getJSON("/api/dashboard/stats"), getJSON("/api/agents")]);
+    stats = s; live = true;
+    if(Array.isArray(a) && a.length) agents = a;
+    try { rev = await getJSON("/api/billing/revenue"); } catch(e){}
+    try { const f = await getJSON("/api/dashboard/activity?limit=8"); if(f.length) feed = f; } catch(e){}
+    let clientMap = {};
+    try { const cl = await getJSON("/api/clients"); cl.forEach(x => clientMap[x.id] = x.name); } catch(e){}
+    const PHASE_PCT = { brief:8, strategy:22, creation:45, review:65, approval:78, live:90, reporting:96, completed:100 };
+    try { const c = await getJSON("/api/campaigns?limit=8"); if(c.length) camps = c.map(x=>({name:x.name,client:clientMap[x.client_id]||x.client_id,status:x.status,region:x.region,pct:PHASE_PCT[x.status]??0,budget:x.budget})); } catch(e){}
+    if(stats.total_clients!=null) document.getElementById("nav-clients").textContent = stats.total_clients;
+  } catch(e){ live = false; document.getElementById("nav-clients").textContent = SEED.stats.total_clients; }
+
+  setConn(live);
+  renderKPIs(stats, rev);
+  renderAgents(agents);
+  renderFeed(feed);
+  renderCampaigns(camps);
+  document.getElementById("nav-agents").textContent = stats.total_agents || agents.length;
+  requestAnimationFrame(()=>document.querySelectorAll(".reveal").forEach((el,i)=>setTimeout(()=>el.classList.add("in"), i*90)));
+}
+boot();
+</script>
+</body>
+</html>
