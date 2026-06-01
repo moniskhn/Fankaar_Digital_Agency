@@ -431,11 +431,7 @@ class JonCEO(BaseAgent):
         text = re.sub(r'^[\s]*\d+\.\s+', '', text, flags=re.MULTILINE)
         # Clean up multiple spaces and newlines
         text = re.sub(r'  +', ' ', text)
-        text = re.sub(r'
-
-+', '
-
-', text)
+        text = re.sub(r'\n{3,}', '\n\n', text)  # collapse 3+ newlines to a paragraph break
         return text.strip()
 
     async def _parse_owner_intent(self, message: str) -> str:
