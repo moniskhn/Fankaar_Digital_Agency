@@ -206,6 +206,7 @@ def load_routers():
         "services": ("app.api.router", "services_router", "/api/services"),
         "public": ("app.api.router", "public_router", "/api/public"),
         "approvals": ("app.api.router", "approval_router", "/api/approvals"),
+        "studio": ("app.api.studio", "studio_router", "/api/studio"),
     }
     loaded = 0
     for name, (mod_path, attr, prefix) in router_map.items():

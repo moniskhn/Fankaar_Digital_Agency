@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fankaar Studio — Image &amp; Reel Generation</title>
+<style>
+  :root { --gold:#d4af37; --gold2:#f4d77e; --bg:#0b0b0d; --panel:#15151a; --line:#2a2a32; --txt:#ece8df; --mut:#9a958a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:20px 28px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; }
+  header h1 { font-size:20px; margin:0; letter-spacing:.5px; }
+  header .dot { width:10px; height:10px; border-radius:50%; background:var(--gold); box-shadow:0 0 12px var(--gold); }
+  .health { margin-left:auto; font-size:12px; color:var(--mut); }
+  main { max-width:1040px; margin:0 auto; padding:24px; display:grid; gap:24px; grid-template-columns:1fr 1fr; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .card h2 { margin:0 0 12px; font-size:15px; color:var(--gold2); letter-spacing:.4px; }
+  label { display:block; font-size:12px; color:var(--mut); margin:10px 0 4px; }
+  input, textarea, select { width:100%; background:#0e0e12; border:1px solid var(--line); color:var(--txt);
+    border-radius:9px; padding:10px 12px; font-size:14px; font-family:inherit; }
+  textarea { resize:vertical; min-height:74px; }
+  .row { display:flex; gap:10px; } .row > * { flex:1; }
+  button { background:linear-gradient(180deg,var(--gold2),var(--gold)); color:#1a1408; border:0; font-weight:700;
+    border-radius:10px; padding:11px 16px; font-size:14px; cursor:pointer; margin-top:14px; width:100%; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .out { margin-top:14px; }
+  .out img { width:100%; border-radius:10px; border:1px solid var(--line); display:block; }
+  .muted { color:var(--mut); font-size:12px; }
+  a.dl { display:inline-block; margin-top:8px; color:var(--gold2); font-size:13px; text-decoration:none; }
+  .scene { border:1px solid var(--line); border-radius:9px; padding:10px; margin-top:10px; }
+  .thumbs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .thumbs img { width:100%; border-radius:8px; border:1px solid var(--line); }
+  @media(max-width:820px){ main{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <span class="dot"></span>
+  <h1>Fankaar Studio</h1>
+  <span class="health" id="health">checking providers…</span>
+</header>
+<main>
+  <!-- IMAGE / POSTER -->
+  <section class="card">
+    <h2>🖼️ Image &amp; Poster</h2>
+    <label>Prompt</label>
+    <textarea id="imgPrompt" placeholder="e.g. luxury gold-on-black social poster for a Dubai joinery brand, minimalist">luxury gold-on-black social media poster, premium Dubai agency, minimalist, high detail</textarea>
+    <div class="row">
+      <div><label>Provider</label>
+        <select id="provider"><option value="">default</option><option value="flux">FLUX (NVIDIA, free)</option><option value="zimage">Z-Image</option></select></div>
+      <div><label>Size</label>
+        <select id="size"><option value="1024x1024">1024×1024 (square)</option><option value="1024x1280">1024×1280 (portrait)</option><option value="1280x720">1280×720 (wide)</option></select></div>
+    </div>
+    <button id="genImg" onclick="genImage()">Generate image</button>
+    <div class="out" id="imgOut"></div>
+  </section>
+
+  <!-- REEL -->
+  <section class="card">
+    <h2>🎬 Reel</h2>
+    <label>Reel title</label>
+    <input id="reelTitle" value="Fankaar Reel">
+    <div id="scenes"></div>
+    <button onclick="addScene()" style="background:#23232b;color:var(--gold2)">+ Add scene</button>
+    <button id="genReel" onclick="genReel()">Generate reel</button>
+    <div class="out" id="reelOut"></div>
+    <p class="muted">Generates one image per scene (FLUX/Z-Image) and, on a local Mac with reel-studio, assembles a 9:16 reel with voiceover &amp; captions. On cloud hosts it returns the scene images (a storyboard).</p>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+async function loadHealth(){
+  try{
+    const r = await fetch('/api/studio/health'); const d = await r.json();
+    const p = d.providers || {};
+    const on = [];
+    if(p.flux) on.push('FLUX✓'); if(p.zimage) on.push('Z-Image✓');
+    $('health').textContent = `providers: ${on.join('  ')||'none'} · default: ${p.default} · reels: ${d.reel_studio?'local✓':'cloud'}`;
+  }catch(e){ $('health').textContent = 'backend offline'; }
+}
+
+async function genImage(){
+  const btn=$('genImg'); btn.disabled=true; btn.textContent='Generating…';
+  $('imgOut').innerHTML='<p class="muted">rendering…</p>';
+  const [w,h]=$('size').value.split('x').map(Number);
+  try{
+    const r=await fetch('/api/studio/image',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:$('imgPrompt').value,width:w,height:h,provider:$('provider').value||null})});
+    const d=await r.json();
+    if(!r.ok){ throw new Error(d.detail||'failed'); }
+    $('imgOut').innerHTML=`<img src="${d.image}"><a class="dl" href="${d.image}" download="fankaar.jpg">⬇ download</a> <span class="muted">${d.provider} · ${(d.bytes/1024|0)} KB</span>`;
+  }catch(e){ $('imgOut').innerHTML=`<p class="muted">⚠ ${e.message}</p>`; }
+  btn.disabled=false; btn.textContent='Generate image';
+}
+
+let sceneN=0;
+function addScene(text='', prompt=''){
+  sceneN++;
+  const d=document.createElement('div'); d.className='scene';
+  d.innerHTML=`<label>Scene ${sceneN} — caption</label><input class="sc-text" value="${text}">
+    <label>image prompt (optional)</label><input class="sc-prompt" placeholder="defaults to the caption" value="${prompt}">`;
+  $('scenes').appendChild(d);
+}
+function genReelScenes(){
+  return [...document.querySelectorAll('.scene')].map(s=>({
+    text:s.querySelector('.sc-text').value, image_prompt:s.querySelector('.sc-prompt').value||null
+  })).filter(s=>s.text.trim());
+}
+async function genReel(){
+  const scenes=genReelScenes();
+  if(!scenes.length){ $('reelOut').innerHTML='<p class="muted">add at least one scene</p>'; return; }
+  const btn=$('genReel'); btn.disabled=true; btn.textContent='Generating…';
+  $('reelOut').innerHTML='<p class="muted">generating scene images…</p>';
+  try{
+    const r=await fetch('/api/studio/reel',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title:$('reelTitle').value,scenes,provider:$('provider').value||null})});
+    const d=await r.json();
+    if(!r.ok){ throw new Error(d.detail||'failed'); }
+    let html='';
+    if(d.mode==='reel'){ html+=`<p class="muted">✅ reel rendered: ${d.mp4_path}</p>`; }
+    else { html+=`<p class="muted">${d.note||'storyboard'}</p>`; }
+    if(d.images){ html+='<div class="thumbs">'+d.images.map(i=>`<img src="${i}">`).join('')+'</div>'; }
+    $('reelOut').innerHTML=html;
+  }catch(e){ $('reelOut').innerHTML=`<p class="muted">⚠ ${e.message}</p>`; }
+  btn.disabled=false; btn.textContent='Generate reel';
+}
+
+addScene('Your brand, elevated.', 'gold luxury brand intro, dark cinematic');
+addScene('Designed in Dubai.', 'Dubai skyline at night, gold accents');
+loadHealth();
+</script>
+</body>
+</html>
