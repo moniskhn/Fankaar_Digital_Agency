@@ -22,8 +22,17 @@ FLUX_URL = os.getenv(
 )
 
 ZIMAGE_API_KEY = os.getenv("ZIMAGE_API_KEY", "")
-ZIMAGE_BASE_URL = os.getenv("ZIMAGE_BASE_URL", "")  # e.g. https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+ZIMAGE_BASE_URL = os.getenv("ZIMAGE_BASE_URL", "")  # OpenAI-images-compatible host (AIML/PiAPI/self-hosted)
 ZIMAGE_MODEL = os.getenv("ZIMAGE_MODEL", "z-image-turbo")
+
+# Official Alibaba Z-Image via DashScope (Model Studio) — free tier. NOT OpenAI-shaped;
+# native sync endpoint that returns a 24h image URL. Set DASHSCOPE_API_KEY to enable.
+DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
+DASHSCOPE_URL = os.getenv(
+    "DASHSCOPE_URL",
+    "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation",
+)
+DASHSCOPE_MODEL = os.getenv("DASHSCOPE_MODEL", "z-image-turbo")
 
 DEFAULT_PROVIDER = os.getenv("IMAGE_PROVIDER", "flux").lower()
 
@@ -36,9 +45,37 @@ def available_providers() -> dict:
     """Which image providers are configured right now (for a health panel)."""
     return {
         "flux": bool(NVIDIA_API_KEY),
-        "zimage": bool(ZIMAGE_API_KEY and ZIMAGE_BASE_URL),
+        "zimage": bool(DASHSCOPE_API_KEY or (ZIMAGE_API_KEY and ZIMAGE_BASE_URL)),
+        "zimage_via": ("dashscope" if DASHSCOPE_API_KEY
+                       else ("openai-compatible" if (ZIMAGE_API_KEY and ZIMAGE_BASE_URL) else None)),
         "default": DEFAULT_PROVIDER,
     }
+
+
+async def _zimage_dashscope(prompt: str, width: int, height: int) -> bytes:
+    """Official Alibaba Z-Image via DashScope (free tier). Sync call → 24h image URL."""
+    payload = {
+        "model": DASHSCOPE_MODEL,
+        "input": {"messages": [{"role": "user", "content": [{"text": prompt[:800]}]}]},
+        "parameters": {"size": f"{width}*{height}", "prompt_extend": False, "seed": 0},
+    }
+    async with httpx.AsyncClient(timeout=120) as http:
+        r = await http.post(
+            DASHSCOPE_URL,
+            headers={"Authorization": f"Bearer {DASHSCOPE_API_KEY}", "Content-Type": "application/json"},
+            json=payload,
+        )
+    if r.status_code != 200:
+        raise ImageGenError(f"DashScope Z-Image {r.status_code}: {r.text[:200]}")
+    try:
+        url = r.json()["output"]["choices"][0]["message"]["content"][0]["image"]
+    except (KeyError, IndexError, TypeError):
+        raise ImageGenError(f"DashScope Z-Image: unexpected response {r.text[:200]}")
+    async with httpx.AsyncClient(timeout=60) as http:
+        img = await http.get(url)
+    if img.status_code != 200:
+        raise ImageGenError("DashScope Z-Image: could not fetch generated image URL")
+    return img.content
 
 
 async def _flux_nvidia(prompt: str, width: int, height: int) -> bytes:
@@ -68,12 +105,14 @@ async def _flux_nvidia(prompt: str, width: int, height: int) -> bytes:
 
 
 async def _zimage(prompt: str, width: int, height: int) -> bytes:
-    """Z-Image via an OpenAI-images-compatible endpoint (DashScope or self-hosted).
-    Set ZIMAGE_BASE_URL + ZIMAGE_API_KEY + ZIMAGE_MODEL to enable."""
+    """Z-Image. Prefers official DashScope (DASHSCOPE_API_KEY); else an OpenAI-images-
+    compatible host (ZIMAGE_BASE_URL + ZIMAGE_API_KEY, e.g. AIML API / PiAPI / self-hosted)."""
+    if DASHSCOPE_API_KEY:
+        return await _zimage_dashscope(prompt, width, height)
     if not (ZIMAGE_API_KEY and ZIMAGE_BASE_URL):
         raise ImageGenError(
-            "Z-Image not configured. Set ZIMAGE_BASE_URL, ZIMAGE_API_KEY, ZIMAGE_MODEL "
-            "(e.g. DashScope/Model Studio, or a local Z-Image server)."
+            "Z-Image not configured. Set DASHSCOPE_API_KEY (Alibaba Model Studio, free), "
+            "or ZIMAGE_BASE_URL + ZIMAGE_API_KEY + ZIMAGE_MODEL (AIML API / PiAPI / self-hosted)."
         )
     url = ZIMAGE_BASE_URL.rstrip("/") + "/images/generations"
     payload = {"model": ZIMAGE_MODEL, "prompt": prompt, "size": f"{width}x{height}", "n": 1}
